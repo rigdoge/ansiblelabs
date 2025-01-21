@@ -1,17 +1,29 @@
 [www]
 user = www-data
 group = www-data
-listen = /run/php/php8.2-fpm.sock
+
+listen = /run/php/php{{ item.key }}-fpm.sock
 listen.owner = www-data
 listen.group = www-data
-pm = dynamic
-pm.max_children = 5
-pm.start_servers = 2
-pm.min_spare_servers = 1
-pm.max_spare_servers = 3
-pm.status_path = /status
-ping.path = /ping
-ping.response = pong
+listen.mode = 0660
+
+pm = {{ php_fpm_base_config.pm }}
+pm.max_children = {{ php_fpm_base_config.pm_max_children }}
+pm.start_servers = {{ php_fpm_base_config.pm_start_servers }}
+pm.min_spare_servers = {{ php_fpm_base_config.pm_min_spare_servers }}
+pm.max_spare_servers = {{ php_fpm_base_config.pm_max_spare_servers }}
+
+; Enable monitoring
+pm.status_path = {{ php_fpm_base_config.status_path }}
+
+access.log = /var/log/php/{{ item.key }}-access.log
+access.format = "%R - %u %t \"%m %r%Q%q\" %s %f %{mili}d %{kilo}M %C%%"
+
+php_admin_value[error_log] = /var/log/php/{{ item.key }}-error.log
+php_admin_flag[log_errors] = on
+
+php_value[session.save_handler] = files
+php_value[session.save_path] = /var/lib/php/sessions
 
 ; Enable PHP-FPM status page
 pm.status_path = /status

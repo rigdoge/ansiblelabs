@@ -4,14 +4,10 @@
   tasks:
     - name: Stop PHP-FPM services
       service:
-        name: "php{{ item }}-fpm"
+        name: "php{{ item.key }}-fpm"
         state: stopped
         enabled: no
-      loop:
-        - "8.1"
-        - "8.2"
-        - "8.3"
-        - "8.4"
+      loop: "{{ php_available_versions | dict2items }}"
       ignore_errors: yes
 
     - name: Remove PHP packages and dependencies
