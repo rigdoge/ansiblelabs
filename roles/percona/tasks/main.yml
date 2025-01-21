@@ -39,31 +39,13 @@
 
 # 启用 Percona Server 8.0 仓库
 - name: Enable Percona Server 8.0 repository
-  command: percona-release enable-only ps-80 release
+  command: percona-release setup -y ps-80
   when: repo_install is success
   register: repo_enable
 
-# 检查 percona-release 命令
-- name: Check percona-release version
-  command: percona-release --version
-  register: percona_version
-
-- name: Display percona-release version
-  debug:
-    var: percona_version.stdout_lines
-
-# 检查源列表目录
-- name: Check sources.list.d directory
-  command: ls -la /etc/apt/sources.list.d/
-  register: sources_dir
-
-- name: Display sources directory content
-  debug:
-    var: sources_dir.stdout_lines
-
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
-  command: percona-release enable-only tools release
+  command: percona-release setup -y tools
   when: repo_install is success
   register: tools_enable
 
@@ -82,14 +64,14 @@
   debug:
     var: repo_status.stdout_lines
 
-# 检查源列表文件
-- name: Check source list files
-  shell: "ls -l /etc/apt/sources.list.d/percona* 2>/dev/null || echo 'No Percona repository files found'"
-  register: sources_content
+# 检查源列表目录
+- name: Check sources.list.d directory
+  command: ls -la /etc/apt/sources.list.d/
+  register: sources_dir
 
-- name: Display source list content
+- name: Display sources directory content
   debug:
-    var: sources_content.stdout_lines
+    var: sources_dir.stdout_lines
 
 # 显示可用的包
 - name: List available Percona packages
