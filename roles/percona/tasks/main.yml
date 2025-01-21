@@ -19,30 +19,20 @@
     state: present
     update_cache: yes
 
-# 添加 Percona 仓库密钥
-- name: Add Percona GPG key
-  apt_key:
-    url: https://repo.percona.com/apt/percona-release.gpg
-    state: present
+# 下载并导入 Percona GPG 密钥
+- name: Download Percona GPG key
+  shell: |
+    wget -qO - https://downloads.percona.com/public.key | gpg --dearmor > /etc/apt/trusted.gpg.d/percona.gpg
+  args:
+    creates: /etc/apt/trusted.gpg.d/percona.gpg
 
 # 添加 Percona 仓库
 - name: Add Percona repository
   apt_repository:
-    repo: "deb https://repo.percona.com/percona/apt {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/percona.gpg] https://downloads.percona.com/percona/apt {{ ansible_distribution_release }} main"
     state: present
     filename: percona
     update_cache: yes
-
-# 启用 Percona Server 8.0
-- name: Install percona-release package
-  apt:
-    name: percona-release
-    state: present
-    update_cache: yes
-
-- name: Enable Percona Server 8.0 repository
-  command: percona-release enable-only ps-80
-  register: repo_enable
 
 # 安装 Percona Server
 - name: Install Percona Server
