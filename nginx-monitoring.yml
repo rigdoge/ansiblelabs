@@ -1,12 +1,18 @@
 ---
-- name: Install Monitoring Stack
+- name: Install Nginx Monitoring
   hosts: nginx
   become: yes
   roles:
-    - prometheus
-    - alertmanager
     - nginx-exporter
-    - grafana 
+    - role: prometheus
+      tags: ['prometheus']
+      vars:
+        prometheus_targets:
+          - name: nginx
+            targets:
+              - localhost:9113
+        prometheus_rules:
+          - nginx.rules.yml
 
 - hosts: all
   become: yes
