@@ -43,6 +43,24 @@
   when: repo_install is success
   register: repo_enable
 
+# 验证 Percona 仓库状态
+- name: Check Percona repository status
+  command: percona-release status
+  register: repo_status
+
+- name: Display repository status
+  debug:
+    var: repo_status.stdout_lines
+
+# 显示可用的包
+- name: List available Percona packages
+  shell: apt-cache search percona-server
+  register: available_packages
+
+- name: Display available packages
+  debug:
+    var: available_packages.stdout_lines
+
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
   command: percona-release setup tools
