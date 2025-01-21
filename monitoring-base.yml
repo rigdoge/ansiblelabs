@@ -1,0 +1,8 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - prometheus
+    - alertmanager
+    - grafana
+    - node_exporter 

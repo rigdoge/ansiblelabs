@@ -1,0 +1,54 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    # 停止 PHP-FPM Exporter 服务
+    - name: Stop PHP-FPM Exporter service
+      service:
+        name: php-fpm-exporter
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # 删除 PHP-FPM Exporter
+    - name: Remove PHP-FPM Exporter binary
+      file:
+        path: /usr/local/bin/php-fpm-exporter
+        state: absent
+
+    # 删除 PHP-FPM Exporter 配置
+    - name: Remove PHP-FPM Exporter configuration
+      file:
+        path: /etc/php-fpm_exporter.yaml
+        state: absent
+
+    # 删除 PHP-FPM Exporter systemd 服务
+    - name: Remove PHP-FPM Exporter service file
+      file:
+        path: /etc/systemd/system/php-fpm-exporter.service
+        state: absent
+
+    # 删除 PHP-FPM 告警规则
+    - name: Remove PHP-FPM alert rules
+      file:
+        path: /etc/prometheus/php-fpm.rules.yml
+        state: absent
+
+    # 从 Prometheus 配置中移除 PHP-FPM 监控
+    - name: Remove PHP-FPM scrape config from Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} PHP-FPM SCRAPE CONFIG"
+        state: absent
+      notify: reload prometheus
+
+    # 重新加载 systemd
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded 

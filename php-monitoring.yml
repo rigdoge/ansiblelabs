@@ -1,0 +1,48 @@
+---
+- hosts: all
+  become: yes
+  roles:
+    - php-fpm-exporter  # 安装 PHP-FPM Exporter
+
+  tasks:
+    # 添加 PHP-FPM 监控配置到 Prometheus
+    - name: Add PHP-FPM scrape config to Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} PHP-FPM SCRAPE CONFIG"
+        block: |
+          - job_name: 'php-fpm'
+            static_configs:
+              - targets: ['localhost:9253']
+            metrics_path: /metrics
+      notify: reload prometheus
+
+    # 添加 PHP-FPM 告警规则
+    - name: Add PHP-FPM alert rules
+      copy:
+        src: roles/prometheus/templates/php-fpm.rules.yml.j2
+        dest: /etc/prometheus/php-fpm.rules.yml
+      notify: reload prometheus
+
+    # 导入 PHP-FPM Grafana 仪表盘
+    - name: Import PHP-FPM dashboard to Grafana
+      uri:
+        url: "http://localhost:3000/api/dashboards/db"
+        method: POST
+        user: admin
+        password: "{{ grafana_admin_password | default('grafana') }}"
+        force_basic_auth: yes
+        body_format: json
+        body:
+          dashboard: "{{ lookup('file', 'roles/grafana/templates/dashboards/php-fpm.json.j2') | from_json }}"
+          overwrite: true
+          message: "Updated by Ansible"
+        status_code: 200
+        headers:
+          Content-Type: "application/json"
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded 

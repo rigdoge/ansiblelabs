@@ -1,0 +1,48 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    # 停止 Nginx Exporter 服务
+    - name: Stop Nginx Exporter service
+      service:
+        name: nginx-exporter
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # 删除 Nginx Exporter
+    - name: Remove Nginx Exporter binary
+      file:
+        path: /usr/local/bin/nginx-exporter
+        state: absent
+
+    # 删除 Nginx Exporter systemd 服务
+    - name: Remove Nginx Exporter service file
+      file:
+        path: /etc/systemd/system/nginx-exporter.service
+        state: absent
+
+    # 删除 Nginx 告警规则
+    - name: Remove Nginx alert rules
+      file:
+        path: /etc/prometheus/nginx.rules.yml
+        state: absent
+
+    # 从 Prometheus 配置中移除 Nginx 监控
+    - name: Remove Nginx scrape config from Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} NGINX SCRAPE CONFIG"
+        state: absent
+      notify: reload prometheus
+
+    # 重新加载 systemd
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded 
