@@ -1,0 +1,120 @@
+---
+# 添加 RabbitMQ 仓库
+- name: Add RabbitMQ signing key
+  apt_key:
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
+    state: present
+
+- name: Add RabbitMQ repository
+  apt_repository:
+    repo: deb [signed-by=/usr/share/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main
+    state: present
+    filename: rabbitmq
+    update_cache: yes
+
+# 安装依赖
+- name: Install required packages
+  apt:
+    name:
+      - erlang
+      - socat
+      - logrotate
+      - python3-pip
+    state: present
+    update_cache: yes
+
+# 安装 RabbitMQ
+- name: Install RabbitMQ server
+  apt:
+    name: rabbitmq-server
+    state: present
+    update_cache: yes
+
+# 配置 RabbitMQ
+- name: Create RabbitMQ configuration directory
+  file:
+    path: /etc/rabbitmq
+    state: directory
+    mode: '0755'
+
+- name: Configure RabbitMQ
+  template:
+    src: rabbitmq.conf.j2
+    dest: /etc/rabbitmq/rabbitmq.conf
+    mode: '0644'
+  notify: restart rabbitmq
+
+- name: Configure RabbitMQ environment
+  template:
+    src: rabbitmq-env.conf.j2
+    dest: /etc/rabbitmq/rabbitmq-env.conf
+    mode: '0644'
+  notify: restart rabbitmq
+
+# 启用管理插件
+- name: Enable RabbitMQ management plugin
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+  notify: restart rabbitmq
+
+# 创建管理员用户
+- name: Create admin user
+  rabbitmq_user:
+    user: "{{ rabbitmq_admin_user }}"
+    password: "{{ rabbitmq_admin_password }}"
+    tags: administrator
+    vhost: /
+    configure_priv: .*
+    read_priv: .*
+    write_priv: .*
+    state: present
+
+# 删除默认 guest 用户
+- name: Remove default guest user
+  rabbitmq_user:
+    user: guest
+    state: absent
+
+# 安装 RabbitMQ Exporter
+- name: Download RabbitMQ Exporter
+  get_url:
+    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.0/rabbitmq-server_3.13.0-1_all.deb"
+    dest: /tmp/rabbitmq-exporter.deb
+    mode: '0644'
+
+- name: Install RabbitMQ Exporter
+  apt:
+    deb: /tmp/rabbitmq-exporter.deb
+    state: present
+
+# 配置 RabbitMQ Exporter 服务
+- name: Configure RabbitMQ Exporter service
+  template:
+    src: rabbitmq-exporter.service.j2
+    dest: /etc/systemd/system/rabbitmq-exporter.service
+    mode: '0644'
+  notify: restart rabbitmq-exporter
+
+# 启动并启用服务
+- name: Start and enable RabbitMQ service
+  systemd:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+- name: Start and enable RabbitMQ Exporter service
+  systemd:
+    name: rabbitmq-exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+# 配置 Prometheus 告警规则
+- name: Configure RabbitMQ Prometheus alert rules
+  template:
+    src: rabbitmq.rules.yml.j2
+    dest: /etc/prometheus/rabbitmq.rules.yml
+    mode: '0644'
+  notify: reload prometheus 

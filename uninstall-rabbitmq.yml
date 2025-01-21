@@ -1,0 +1,79 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    # 停止并禁用服务
+    - name: Stop and disable RabbitMQ services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      with_items:
+        - rabbitmq-server
+        - rabbitmq-exporter
+      ignore_errors: yes
+
+    # 删除 RabbitMQ 软件包
+    - name: Remove RabbitMQ packages
+      apt:
+        name:
+          - rabbitmq-server
+          - erlang
+          - erlang-*
+        state: absent
+        purge: yes
+        autoremove: yes
+      ignore_errors: yes
+
+    # 清理配置目录
+    - name: Remove RabbitMQ directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/rabbitmq
+        - /var/lib/rabbitmq
+        - /var/log/rabbitmq
+        - /usr/lib/rabbitmq
+        - /usr/sbin/rabbitmq*
+        - /etc/systemd/system/rabbitmq*
+      ignore_errors: yes
+
+    # 删除用户和组
+    - name: Remove RabbitMQ user and group
+      user:
+        name: rabbitmq
+        state: absent
+        remove: yes
+      ignore_errors: yes
+
+    # 清理 APT 源
+    - name: Remove RabbitMQ repository
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
+        state: absent
+        filename: rabbitmq
+      ignore_errors: yes
+
+    - name: Remove RabbitMQ signing key
+      apt_key:
+        url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
+        state: absent
+      ignore_errors: yes
+
+    # 清理 Prometheus 配置
+    - name: Remove RabbitMQ Prometheus configuration
+      file:
+        path: /etc/prometheus/rabbitmq.rules.yml
+        state: absent
+      ignore_errors: yes
+
+    # 重新加载 systemd
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    # 更新 APT 缓存
+    - name: Update APT cache
+      apt:
+        update_cache: yes 

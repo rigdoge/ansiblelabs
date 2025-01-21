@@ -1,0 +1,56 @@
+# RabbitMQ 配置文件
+# 参考: https://www.rabbitmq.com/configure.html
+
+# 网络配置
+listeners.tcp.default = {{ rabbitmq_tcp_port }}
+management.tcp.port = {{ rabbitmq_management_port }}
+prometheus.tcp.port = {{ rabbitmq_prometheus_port }}
+
+# SSL/TLS 配置
+{% if rabbitmq_enable_ssl %}
+listeners.ssl.default = {{ rabbitmq_ssl_port }}
+ssl_options.certfile = {{ rabbitmq_ssl_cert_file }}
+ssl_options.keyfile = {{ rabbitmq_ssl_key_file }}
+ssl_options.cacertfile = {{ rabbitmq_ssl_ca_file }}
+ssl_options.verify = verify_peer
+ssl_options.fail_if_no_peer_cert = true
+{% endif %}
+
+# 资源限制
+vm_memory_high_watermark.relative = {{ rabbitmq_memory_high_watermark }}
+disk_free_limit.absolute = {{ rabbitmq_disk_free_limit }}
+
+# 日志配置
+log.file.level = {{ rabbitmq_log_level }}
+log.dir = {{ rabbitmq_log_dir }}
+
+# 集群配置
+{% if rabbitmq_cluster_enabled %}
+cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
+cluster_formation.classic_config.nodes.{{ ansible_hostname }} = rabbit@{{ ansible_hostname }}
+{% for node in rabbitmq_cluster_nodes %}
+cluster_formation.classic_config.nodes.{{ node }} = rabbit@{{ node }}
+{% endfor %}
+{% endif %}
+
+# 安全配置
+loopback_users = none
+default_user = {{ rabbitmq_admin_user }}
+default_pass = {{ rabbitmq_admin_password }}
+
+# 监控配置
+{% if rabbitmq_enable_monitoring %}
+prometheus.return_per_object_metrics = true
+management.enable_queue_totals = true
+collect_statistics_interval = 10000
+{% endif %}
+
+# 性能优化
+tcp_listen_options.backlog = 128
+tcp_listen_options.nodelay = true
+tcp_listen_options.exit_on_close = false
+tcp_listen_options.keepalive = true
+
+# 消息持久化
+queue_master_locator = min-masters
+queue_index_embed_msgs_below = 4096 

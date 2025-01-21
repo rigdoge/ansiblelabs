@@ -1,0 +1,72 @@
+groups:
+  - name: rabbitmq_alerts
+    rules:
+      # RabbitMQ 服务存活监控
+      - alert: RabbitMQDown
+        expr: rabbitmq_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "RabbitMQ 实例已停止 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "RabbitMQ 实例已经停止运行超过 1 分钟\n  实例: {% raw %}{{ $labels.instance }}{% endraw %}"
+
+      # 队列积压监控
+      - alert: RabbitMQQueueBacklog
+        expr: rabbitmq_queue_messages_ready > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 队列积压 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "队列 {% raw %}{{ $labels.queue }}{% endraw %} 中有超过 1000 条未处理的消息\n  当前值: {% raw %}{{ $value }}{% endraw %}"
+
+      # 内存使用监控
+      - alert: RabbitMQHighMemoryUsage
+        expr: rabbitmq_process_resident_memory_bytes / rabbitmq_resident_memory_limit_bytes > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 内存使用率过高 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "RabbitMQ 内存使用超过限制的 80%\n  当前使用率: {% raw %}{{ $value | humanizePercentage }}{% endraw %}"
+
+      # 磁盘空间监控
+      - alert: RabbitMQLowDiskSpace
+        expr: rabbitmq_disk_free_bytes / 1024 / 1024 < 5120
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 磁盘空间不足 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "RabbitMQ 节点剩余磁盘空间不足 5GB\n  当前剩余: {% raw %}{{ $value | humanize }}{% endraw %}B"
+
+      # 连接数监控
+      - alert: RabbitMQTooManyConnections
+        expr: rabbitmq_connections > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 连接数过多 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "RabbitMQ 连接数超过 1000\n  当前连接数: {% raw %}{{ $value }}{% endraw %}"
+
+      # 消费者监控
+      - alert: RabbitMQNoConsumers
+        expr: rabbitmq_queue_consumers == 0 and rabbitmq_queue_messages > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 队列无消费者 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "队列 {% raw %}{{ $labels.queue }}{% endraw %} 有消息但没有消费者\n  消息数: {% raw %}{{ $value }}{% endraw %}"
+
+      # 节点文件描述符监控
+      - alert: RabbitMQHighFileDescriptorUsage
+        expr: rabbitmq_process_open_fds / rabbitmq_process_max_fds > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "RabbitMQ 文件描述符使用率过高 ({% raw %}{{ $labels.instance }}{% endraw %})"
+          description: "RabbitMQ 文件描述符使用超过限制的 80%\n  当前使用率: {% raw %}{{ $value | humanizePercentage }}{% endraw %}" 

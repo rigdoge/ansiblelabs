@@ -1,0 +1,20 @@
+[Unit]
+Description=RabbitMQ Exporter
+Documentation=https://github.com/rabbitmq/rabbitmq-server/tree/main/deps/rabbitmq_prometheus
+After=network-online.target rabbitmq-server.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rabbitmq
+Group=rabbitmq
+Environment=RABBIT_USER={{ rabbitmq_exporter_user }}
+Environment=RABBIT_PASSWORD={{ rabbitmq_exporter_password }}
+Environment=PUBLISH_PORT={{ rabbitmq_exporter_port }}
+ExecStart=/usr/sbin/rabbitmq-prometheus --path /metrics
+Restart=always
+RestartSec=10
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target 

@@ -1,0 +1,38 @@
+---
+# RabbitMQ 版本
+rabbitmq_version: "3.13.0"
+
+# RabbitMQ 管理员账户
+rabbitmq_admin_user: admin
+rabbitmq_admin_password: StrongPassword123
+
+# RabbitMQ 配置
+rabbitmq_tcp_port: 5672
+rabbitmq_management_port: 15672
+rabbitmq_prometheus_port: 15692
+
+# 内存和磁盘限制
+rabbitmq_memory_high_watermark: 0.4
+rabbitmq_disk_free_limit: "2GB"
+
+# SSL/TLS 配置
+rabbitmq_enable_ssl: false
+rabbitmq_ssl_port: 5671
+rabbitmq_ssl_cert_file: "/etc/rabbitmq/ssl/cert.pem"
+rabbitmq_ssl_key_file: "/etc/rabbitmq/ssl/key.pem"
+rabbitmq_ssl_ca_file: "/etc/rabbitmq/ssl/ca.pem"
+
+# 监控配置
+rabbitmq_enable_monitoring: true
+rabbitmq_exporter_port: 9419
+rabbitmq_exporter_user: monitoring
+rabbitmq_exporter_password: monitoring123
+
+# 日志配置
+rabbitmq_log_level: info
+rabbitmq_log_dir: /var/log/rabbitmq
+
+# 集群配置（预留）
+rabbitmq_cluster_enabled: false
+rabbitmq_erlang_cookie: CHANGEME
+rabbitmq_cluster_nodes: [] 
