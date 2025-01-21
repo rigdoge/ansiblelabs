@@ -39,10 +39,7 @@
 
 # 启用 Percona Server 8.0 仓库
 - name: Enable Percona Server 8.0 repository
-  shell: |
-    percona-release disable all
-    percona-release setup ps-80
-    percona-release enable ps-80 release
+  command: percona-release enable-only ps-80 release
   when: repo_install is success
   register: repo_enable
 
