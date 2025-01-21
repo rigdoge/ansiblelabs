@@ -78,6 +78,7 @@
     state: "{{ 'started' if item.value.state == 'present' else 'stopped' }}"
     enabled: "{{ item.value.state == 'present' }}"
   loop: "{{ php_available_versions | dict2items }}"
+  when: php_install_result is defined and php_install_result.results | selectattr('item.key', 'equalto', item.key) | list | length > 0
 
 - name: Create PHP version switcher script
   template:
