@@ -40,7 +40,6 @@ php_extensions:
   - simplexml
   - soap
   - sockets
-  - sodium
   - xml
   - xmlwriter
   - xsl
