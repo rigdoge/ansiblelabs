@@ -29,6 +29,7 @@
       loop: "{{ php_available_versions | dict2items }}"
       register: php_install_result
       notify: "restart php{{ item.key }}-fpm"
+      when: item.value.state == 'present'
 
     - name: Install PHP extensions for each version
       apt:
