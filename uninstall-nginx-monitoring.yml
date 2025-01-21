@@ -28,13 +28,20 @@
         path: /etc/prometheus/nginx.rules.yml
         state: absent
 
+    # 检查 Prometheus 配置文件是否存在
+    - name: Check if Prometheus config exists
+      stat:
+        path: /etc/prometheus/prometheus.yml
+      register: prometheus_config
+
     # 从 Prometheus 配置中移除 Nginx 监控
     - name: Remove Nginx scrape config from Prometheus
       blockinfile:
         path: /etc/prometheus/prometheus.yml
         marker: "# {mark} NGINX SCRAPE CONFIG"
         state: absent
-      notify: reload prometheus
+      when: prometheus_config.stat.exists
+      notify: restart prometheus
 
     # 重新加载 systemd
     - name: Reload systemd
@@ -42,7 +49,8 @@
         daemon_reload: yes
 
   handlers:
-    - name: reload prometheus
+    - name: restart prometheus
       systemd:
         name: prometheus
-        state: reloaded 
+        state: restarted
+      ignore_errors: yes 

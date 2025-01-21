@@ -34,12 +34,19 @@
         path: /etc/prometheus/php-fpm.rules.yml
         state: absent
 
+    # 检查 Prometheus 配置文件是否存在
+    - name: Check if Prometheus config exists
+      stat:
+        path: /etc/prometheus/prometheus.yml
+      register: prometheus_config
+
     # 从 Prometheus 配置中移除 PHP-FPM 监控
     - name: Remove PHP-FPM scrape config from Prometheus
       blockinfile:
         path: /etc/prometheus/prometheus.yml
         marker: "# {mark} PHP-FPM SCRAPE CONFIG"
         state: absent
+      when: prometheus_config.stat.exists
       notify: restart prometheus
 
     # 重新加载 systemd
@@ -51,4 +58,5 @@
     - name: restart prometheus
       systemd:
         name: prometheus
-        state: restarted 
+        state: restarted
+      ignore_errors: yes 
