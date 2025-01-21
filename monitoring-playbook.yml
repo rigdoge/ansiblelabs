@@ -5,4 +5,5 @@
   roles:
     - prometheus
     - alertmanager
-    - nginx-exporter 
+    - nginx-exporter
+    - grafana 
