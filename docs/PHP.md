@@ -10,25 +10,35 @@
 # 默认使用的 PHP 版本
 php_default_version: "8.2"  # 这里设置默认版本
 
+# 多版本并存配置示例
 php_available_versions:
+  "8.4":
+    status_port: 9004
+    priority: 40  # 优先级数字越小，版本越优先
+    state: present  # 同时安装所有版本
   "8.3":
     status_port: 9003
     priority: 30
-    state: absent  # 设置为 present 来安装
+    state: present
   "8.2":
     status_port: 9002
     priority: 20
-    state: present  # 当前安装，也是默认版本
+    state: present  # 当前默认版本
   "8.1":
     status_port: 9001
     priority: 10
-    state: present  # 当前安装
+    state: present
 ```
 
-默认版本决定了：
-1. 系统默认的 PHP CLI 版本
-2. PHP-FPM Exporter 监控的主要版本
-3. Web 服务器默认使用的 PHP-FPM socket
+多版本说明：
+1. 每个版本使用不同的 status_port 避免端口冲突
+2. priority 决定版本切换时的优先级
+3. 所有版本都可以同时运行
+4. 每个版本独立配置和运行：
+   - 独立的 PHP-FPM 进程
+   - 独立的扩展配置
+   - 独立的监控端点
+   - 独立的日志文件
 
 ### 2. 安装 PHP
 
@@ -101,10 +111,41 @@ php_available_versions:
 
 ### 1. 版本切换后 Web 服务器配置
 
+#### 单版本配置
 切换 PHP 版本后，需要确保 Web 服务器（如 Nginx）配置指向正确的 PHP-FPM socket：
-```
+```nginx
 fastcgi_pass unix:/run/php/php[VERSION]-fpm.sock;
 ```
+
+#### 多版本配置
+可以通过 Nginx location 配置支持多个 PHP 版本：
+```nginx
+# PHP 8.4
+location ~ \.php84$ {
+    fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}
+
+# PHP 8.3
+location ~ \.php83$ {
+    fastcgi_pass unix:/run/php/php8.3-fpm.sock;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}
+
+# PHP 8.2 (默认)
+location ~ \.php$ {
+    fastcgi_pass unix:/run/php/php8.2-fpm.sock;
+    include fastcgi_params;
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}
+```
+
+使用方法：
+- `example.php` - 使用默认版本（8.2）
+- `example.php83` - 使用 PHP 8.3
+- `example.php84` - 使用 PHP 8.4
 
 ### 2. 扩展管理
 
