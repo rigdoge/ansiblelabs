@@ -40,7 +40,7 @@
         path: /etc/prometheus/prometheus.yml
         marker: "# {mark} PHP-FPM SCRAPE CONFIG"
         state: absent
-      notify: reload prometheus
+      notify: restart prometheus
 
     # 重新加载 systemd
     - name: Reload systemd
@@ -48,7 +48,7 @@
         daemon_reload: yes
 
   handlers:
-    - name: reload prometheus
+    - name: restart prometheus
       systemd:
         name: prometheus
-        state: reloaded 
+        state: restarted 

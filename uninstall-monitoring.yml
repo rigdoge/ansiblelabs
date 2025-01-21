@@ -2,7 +2,7 @@
 - hosts: all
   become: yes
   tasks:
-    # 停止服务
+    # 停止服务（如果存在）
     - name: Stop monitoring services
       service:
         name: "{{ item }}"
@@ -31,12 +31,14 @@
         repo: "deb https://apt.grafana.com stable main"
         state: absent
         filename: grafana
+      ignore_errors: yes
 
     # 删除 Grafana GPG key
     - name: Remove Grafana GPG key
       apt_key:
         url: https://apt.grafana.com/gpg.key
         state: absent
+      ignore_errors: yes
 
     # 删除监控组件目录
     - name: Remove monitoring directories
@@ -55,6 +57,7 @@
         - /usr/local/bin/node_exporter
         - /usr/local/bin/nginx-exporter
         - /usr/local/bin/php-fpm-exporter
+      ignore_errors: yes
 
     # 删除 systemd 服务文件
     - name: Remove systemd service files
@@ -67,6 +70,7 @@
         - node_exporter.service
         - nginx-exporter.service
         - php-fpm-exporter.service
+      ignore_errors: yes
 
     # 重新加载 systemd
     - name: Reload systemd
