@@ -27,7 +27,17 @@
 - name: Wait for Grafana to start
   wait_for:
     port: 3000
-    timeout: 30
+    timeout: 60
+
+# 等待 Grafana API 可用
+- name: Wait for Grafana API to be ready
+  uri:
+    url: "http://localhost:3000/api/health"
+    method: GET
+  register: result
+  until: result.status == 200
+  retries: 12
+  delay: 5
 
 # 修改默认密码
 - name: Change Grafana admin password
@@ -44,6 +54,11 @@
     status_code: [200, 400]  # 400 表示密码已更改
     headers:
       Content-Type: "application/json"
+
+# 等待密码更改生效
+- name: Wait for password change to take effect
+  pause:
+    seconds: 5
 
 # 安装 grafana-cli 工具
 - name: Install grafana-cli tools
@@ -69,8 +84,12 @@
     status_code: [200, 409]  # 409 表示数据源已存在
     headers:
       Content-Type: "application/json"
+  register: result
+  until: result.status in [200, 409]
+  retries: 3
+  delay: 5
 
-# 导入仪表盘
+# 导入 Nginx 仪表盘
 - name: Import Nginx dashboard
   uri:
     url: "http://localhost:3000/api/dashboards/db"
@@ -86,6 +105,10 @@
     status_code: 200
     headers:
       Content-Type: "application/json"
+  register: result
+  until: result.status == 200
+  retries: 3
+  delay: 5
 
 # 导入 PHP-FPM 仪表盘
 - name: Import PHP-FPM dashboard
@@ -102,4 +125,8 @@
       message: "Updated by Ansible"
     status_code: 200
     headers:
-      Content-Type: "application/json" 
+      Content-Type: "application/json"
+  register: result
+  until: result.status == 200
+  retries: 3
+  delay: 5 
