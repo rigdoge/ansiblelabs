@@ -63,7 +63,10 @@
     password: admin
     force_basic_auth: yes
     body_format: json
-    body: "{{ lookup('file', 'templates/nginx-dashboard.json') | from_json | combine({'overwrite': true}) }}"
+    body:
+      dashboard: "{{ lookup('file', 'templates/nginx-dashboard.json') | from_json }}"
+      overwrite: true
+      message: "Updated by Ansible"
     status_code: 200
     headers:
       Content-Type: "application/json" 
