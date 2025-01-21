@@ -1,0 +1,28 @@
+---
+# Percona Server 版本配置
+percona_version: "8.0"
+percona_release: "8.0.*"  # 使用通配符安装最新的 8.0.x 版本
+
+# 数据库配置
+mysql_root_password: "your_secure_password"
+mysql_port: 3306
+mysql_bind_address: "0.0.0.0"
+
+# 系统配置
+mysql_max_connections: 151
+innodb_buffer_pool_size: "128M"
+innodb_log_file_size: "48M"
+
+# 监控配置
+mysql_exporter_version: "0.15.0"  # 更新到最新稳定版
+mysql_exporter_user: "exporter"
+mysql_exporter_password: "exporter_password"
+mysql_exporter_port: 9104
+
+# 备份配置
+backup_dir: "/var/backup/mysql"
+backup_retention_days: 7
+
+# 复制配置
+replication_role: "master"  # 可选: master, slave
+server_id: 1 

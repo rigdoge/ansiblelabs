@@ -1,0 +1,102 @@
+---
+# 安装依赖包
+- name: Install dependencies
+  apt:
+    name:
+      - gnupg2
+      - curl
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+# 添加 Percona 仓库
+- name: Add Percona apt key
+  apt_key:
+    url: https://repo.percona.com/apt/percona-release.key
+    state: present
+
+- name: Add Percona repository
+  apt_repository:
+    repo: deb http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main
+    state: present
+    filename: percona-release
+    update_cache: yes
+
+# 安装 Percona Server
+- name: Install Percona Server
+  apt:
+    name:
+      - percona-server-server
+      - percona-server-client
+      - percona-server-common
+      - percona-toolkit
+    state: present
+  notify: restart mysql
+
+# 配置 MySQL
+- name: Create MySQL configuration file
+  template:
+    src: my.cnf.j2
+    dest: /etc/mysql/my.cnf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: restart mysql
+
+# 确保 MySQL 服务运行
+- name: Ensure MySQL is running and enabled
+  systemd:
+    name: mysql
+    state: started
+    enabled: yes
+
+# 设置 root 密码
+- name: Set MySQL root password
+  mysql_user:
+    name: root
+    host: localhost
+    password: "{{ mysql_root_password }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+    state: present
+  ignore_errors: yes
+
+# 创建监控用户
+- name: Create MySQL monitoring user
+  mysql_user:
+    name: "{{ mysql_exporter_user }}"
+    host: localhost
+    password: "{{ mysql_exporter_password }}"
+    priv: "*.*:PROCESS,REPLICATION CLIENT,SELECT"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_password }}"
+  notify: restart mysql_exporter
+
+# 安装 MySQL Exporter
+- name: Download and install MySQL Exporter
+  unarchive:
+    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-amd64.tar.gz"
+    dest: /usr/local/bin
+    remote_src: yes
+    extra_opts:
+      - --strip-components=1
+      - --wildcards
+      - '*/mysqld_exporter'
+    mode: '0755'
+  notify: restart mysql_exporter
+
+# 创建 MySQL Exporter 服务
+- name: Create MySQL Exporter systemd service
+  template:
+    src: mysql_exporter.service.j2
+    dest: /etc/systemd/system/mysql_exporter.service
+    mode: '0644'
+  notify: restart mysql_exporter
+
+# 确保 MySQL Exporter 运行
+- name: Ensure MySQL Exporter is running and enabled
+  systemd:
+    name: mysql_exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes 

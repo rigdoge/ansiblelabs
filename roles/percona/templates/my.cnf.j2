@@ -1,0 +1,50 @@
+[mysqld]
+# 基础配置
+user = mysql
+pid-file = /var/run/mysqld/mysqld.pid
+socket = /var/run/mysqld/mysqld.sock
+port = {{ mysql_port }}
+basedir = /usr
+datadir = /var/lib/mysql
+tmpdir = /tmp
+bind-address = {{ mysql_bind_address }}
+
+# 字符集配置
+character-set-server = utf8mb4
+collation-server = utf8mb4_general_ci
+
+# 连接配置
+max_connections = {{ mysql_max_connections }}
+max_allowed_packet = 16M
+wait_timeout = 600
+
+# InnoDB 配置
+innodb_buffer_pool_size = {{ innodb_buffer_pool_size }}
+innodb_log_file_size = {{ innodb_log_file_size }}
+innodb_file_per_table = 1
+innodb_flush_log_at_trx_commit = 1
+innodb_flush_method = O_DIRECT
+
+# 复制配置
+server-id = {{ server_id }}
+{% if replication_role == 'master' %}
+log-bin = mysql-bin
+binlog_format = ROW
+sync_binlog = 1
+{% endif %}
+
+# 慢查询日志
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/mysql-slow.log
+long_query_time = 2
+
+# 错误日志
+log_error = /var/log/mysql/error.log
+
+[client]
+port = {{ mysql_port }}
+socket = /var/run/mysqld/mysqld.sock
+default-character-set = utf8mb4
+
+[mysql]
+default-character-set = utf8mb4 

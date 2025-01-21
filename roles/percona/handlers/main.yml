@@ -1,0 +1,24 @@
+---
+- name: restart mysql
+  systemd:
+    name: mysql
+    state: restarted
+    daemon_reload: yes
+
+- name: restart mysql_exporter
+  systemd:
+    name: mysql_exporter
+    state: restarted
+    daemon_reload: yes
+
+- name: stop mysql
+  systemd:
+    name: mysql
+    state: stopped
+    enabled: no
+
+- name: stop mysql_exporter
+  systemd:
+    name: mysql_exporter
+    state: stopped
+    enabled: no 
