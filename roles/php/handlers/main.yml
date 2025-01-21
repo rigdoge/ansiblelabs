@@ -1,9 +1,24 @@
 ---
-{% for version, config in php_available_versions.items() %}
-- name: restart php{{ version }}-fpm
+- name: restart php8.1-fpm
   service:
-    name: php{{ version }}-fpm
+    name: php8.1-fpm
     state: restarted
-  when: config.state == 'present'
+    daemon_reload: yes
 
-{% endfor %} 
+- name: restart php8.2-fpm
+  service:
+    name: php8.2-fpm
+    state: restarted
+    daemon_reload: yes
+
+- name: restart php8.3-fpm
+  service:
+    name: php8.3-fpm
+    state: restarted
+    daemon_reload: yes
+
+- name: restart php8.4-fpm
+  service:
+    name: php8.4-fpm
+    state: restarted
+    daemon_reload: yes 
