@@ -9,7 +9,7 @@
 
     - name: Add Nginx repository
       ansible.builtin.apt_repository:
-        repo: "deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx"
+        repo: "deb http://nginx.org/packages/debian/ bookworm nginx"
         state: present
         filename: nginx
       when: ansible_os_family == "Debian"
@@ -26,7 +26,7 @@
 
 - name: Install Nginx 1.24
   apt:
-    name: nginx
+    name: nginx=1.24.*
     state: present
     update_cache: yes
   when: ansible_os_family == "Debian"
