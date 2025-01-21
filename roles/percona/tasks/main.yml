@@ -129,7 +129,7 @@
 # 安装 Percona Server Common
 - name: Install Percona Server Common
   apt:
-    name: percona-server-common_8.0.40-31-1.bookworm_arm64.deb
+    name: percona-server-common
     state: present
     force: yes
   register: common_install
@@ -153,7 +153,7 @@
 # 安装 Percona Server Client
 - name: Install Percona Server Client
   apt:
-    name: percona-server-client_8.0.40-31-1.bookworm_arm64.deb
+    name: percona-server-client
     state: present
     force: yes
   when: common_install is success
@@ -163,7 +163,7 @@
 - name: Install Percona Server
   apt:
     name:
-      - percona-server-server_8.0.40-31-1.bookworm_arm64.deb
+      - percona-server-server
       - percona-toolkit
       - percona-xtrabackup
     state: present
