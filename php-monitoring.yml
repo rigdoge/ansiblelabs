@@ -3,6 +3,7 @@
   hosts: all
   become: yes
   vars:
+    php_default_version: "8.2"  # 设置默认 PHP 版本
     php_available_versions:
       "8.1":
         status_port: 9001
