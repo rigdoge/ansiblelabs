@@ -3,8 +3,8 @@
 php_available_versions:
   "8.3":
     status_port: 9003
-    priority: 30  # 优先级，数字越小优先级越高
-    state: absent # present 或 absent
+    priority: 30
+    state: present
   "8.2":
     status_port: 9002
     priority: 20
