@@ -9,7 +9,7 @@
 
 - name: Download Prometheus
   get_url:
-    url: https://github.com/prometheus/prometheus/releases/download/v2.49.1/prometheus-2.49.1.linux-amd64.tar.gz
+    url: https://github.com/prometheus/prometheus/releases/download/v2.49.1/prometheus-2.49.1.linux-arm64.tar.gz
     dest: /tmp/prometheus.tar.gz
     mode: '0644'
 
@@ -26,6 +26,8 @@
     - /etc/prometheus/rules
     - /etc/prometheus/rules.d
     - /etc/prometheus/files_sd
+    - /etc/prometheus/consoles
+    - /etc/prometheus/console_libraries
 
 - name: Extract Prometheus
   unarchive:
@@ -35,13 +37,25 @@
 
 - name: Copy Prometheus binary
   copy:
-    src: "/tmp/prometheus-2.49.1.linux-amd64/{{ item }}"
+    src: "/tmp/prometheus-2.49.1.linux-arm64/{{ item }}"
     dest: /usr/local/bin/
     mode: '0755'
     remote_src: yes
   with_items:
     - prometheus
     - promtool
+
+- name: Copy console files
+  copy:
+    src: "/tmp/prometheus-2.49.1.linux-arm64/{{ item.src }}"
+    dest: "/etc/prometheus/{{ item.dest }}"
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+    remote_src: yes
+  with_items:
+    - { src: 'consoles', dest: '' }
+    - { src: 'console_libraries', dest: '' }
 
 - name: Configure Prometheus
   template:
