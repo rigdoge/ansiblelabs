@@ -1,0 +1,43 @@
+---
+- name: Add Nginx Repository
+  block:
+    - name: Add Nginx signing key
+      ansible.builtin.apt_key:
+        url: https://nginx.org/keys/nginx_signing.key
+        state: present
+      when: ansible_os_family == "Debian"
+
+    - name: Add Nginx repository
+      ansible.builtin.apt_repository:
+        repo: "deb http://nginx.org/packages/{{ ansible_distribution|lower }}/ {{ ansible_distribution_release }} nginx"
+        state: present
+        filename: nginx
+      when: ansible_os_family == "Debian"
+
+    - name: Add Nginx repository for RHEL/CentOS
+      ansible.builtin.yum_repository:
+        name: nginx
+        description: nginx repo
+        baseurl: "http://nginx.org/packages/centos/$releasever/$basearch/"
+        gpgcheck: yes
+        enabled: yes
+        gpgkey: https://nginx.org/keys/nginx_signing.key
+      when: ansible_os_family == "RedHat"
+
+- name: Install Nginx 1.24
+  package:
+    name: nginx-1.24.*
+    state: present
+    update_cache: yes
+
+- name: Start and enable Nginx service
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Configure Nginx
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx 
