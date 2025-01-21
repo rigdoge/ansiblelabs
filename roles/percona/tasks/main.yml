@@ -41,16 +41,14 @@
 - name: Enable Percona Server 8.0 repository
   shell: |
     percona-release disable all
-    percona-release enable ps-80 release
-    apt-get update
+    percona-release enable-only ps-80 release
   when: repo_install is success
   register: repo_enable
 
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
   shell: |
-    percona-release enable tools release
-    apt-get update
+    percona-release enable-only tools release
   when: repo_install is success
   register: tools_enable
 
