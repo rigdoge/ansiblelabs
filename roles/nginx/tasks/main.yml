@@ -5,38 +5,18 @@
       ansible.builtin.apt_key:
         url: https://nginx.org/keys/nginx_signing.key
         state: present
-      when: ansible_os_family == "Debian"
 
     - name: Add Nginx repository
       ansible.builtin.apt_repository:
         repo: "deb http://nginx.org/packages/debian/ bookworm nginx"
         state: present
         filename: nginx
-      when: ansible_os_family == "Debian"
-
-    - name: Add Nginx repository for RHEL/CentOS
-      ansible.builtin.yum_repository:
-        name: nginx
-        description: nginx repo
-        baseurl: "http://nginx.org/packages/centos/$releasever/$basearch/"
-        gpgcheck: yes
-        enabled: yes
-        gpgkey: https://nginx.org/keys/nginx_signing.key
-      when: ansible_os_family == "RedHat"
 
 - name: Install Nginx 1.24
   apt:
     name: nginx=1.24.*
     state: present
     update_cache: yes
-  when: ansible_os_family == "Debian"
-
-- name: Install Nginx 1.24 (RHEL/CentOS)
-  yum:
-    name: nginx
-    state: present
-    update_cache: yes
-  when: ansible_os_family == "RedHat"
 
 - name: Start and enable Nginx service
   service:
