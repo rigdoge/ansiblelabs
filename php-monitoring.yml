@@ -1,8 +1,28 @@
 ---
-- hosts: all
+- name: Install PHP-FPM Monitoring
+  hosts: all
   become: yes
+  vars:
+    php_available_versions:
+      "8.1":
+        status_port: 9001
+        priority: 10
+        state: present
+      "8.2":
+        status_port: 9002
+        priority: 20
+        state: present
+      "8.3":
+        status_port: 9003
+        priority: 30
+        state: present
+      "8.4":
+        status_port: 9004
+        priority: 40
+        state: present
+
   roles:
-    - php-fpm-exporter  # 安装 PHP-FPM Exporter
+    - php-fpm-exporter
 
   tasks:
     # 添加 PHP-FPM 监控配置到 Prometheus
@@ -14,15 +34,14 @@
           - job_name: 'php-fpm'
             static_configs:
               - targets: ['localhost:9253']
-            metrics_path: /metrics
-      notify: reload prometheus
+      notify: restart prometheus
 
     # 添加 PHP-FPM 告警规则
     - name: Add PHP-FPM alert rules
       copy:
-        src: roles/prometheus/templates/php-fpm.rules.yml.j2
+        src: roles/prometheus/templates/php-fpm.rules.yml
         dest: /etc/prometheus/php-fpm.rules.yml
-      notify: reload prometheus
+      notify: restart prometheus
 
     # 导入 PHP-FPM Grafana 仪表盘
     - name: Import PHP-FPM dashboard to Grafana
@@ -42,7 +61,8 @@
           Content-Type: "application/json"
 
   handlers:
-    - name: reload prometheus
+    - name: restart prometheus
       systemd:
         name: prometheus
-        state: reloaded 
+        state: restarted
+        daemon_reload: yes 
