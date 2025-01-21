@@ -64,6 +64,15 @@
   debug:
     var: repo_status.stdout_lines
 
+# 检查源列表文件
+- name: Check source list files
+  command: cat /etc/apt/sources.list.d/percona-*.list
+  register: sources_content
+
+- name: Display source list content
+  debug:
+    var: sources_content.stdout_lines
+
 # 显示可用的包
 - name: List available Percona packages
   shell: apt-cache search percona-server
@@ -72,6 +81,15 @@
 - name: Display available packages
   debug:
     var: available_packages.stdout_lines
+
+# 显示包的详细信息
+- name: Get package details
+  shell: apt-cache policy percona-server-common-8.0
+  register: package_details
+
+- name: Display package details
+  debug:
+    var: package_details.stdout_lines
 
 # 创建 MySQL 组
 - name: Create MySQL group
