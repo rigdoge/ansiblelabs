@@ -7,22 +7,32 @@
   when: php_available_versions['8.1'].state == 'present'
 
 - name: restart php8.2-fpm
-  service:
+  systemd:
     name: php8.2-fpm
     state: restarted
     daemon_reload: yes
-  when: php_available_versions['8.2'].state == 'present'
 
 - name: restart php8.3-fpm
-  service:
+  systemd:
     name: php8.3-fpm
     state: restarted
     daemon_reload: yes
-  when: php_available_versions['8.3'].state == 'present'
 
 - name: restart php8.4-fpm
   service:
     name: php8.4-fpm
     state: restarted
     daemon_reload: yes
-  when: php_available_versions['8.4'].state == 'present' 
+  when: php_available_versions['8.4'].state == 'present'
+
+- name: stop php8.2-fpm
+  systemd:
+    name: php8.2-fpm
+    state: stopped
+    enabled: no
+
+- name: stop php8.3-fpm
+  systemd:
+    name: php8.3-fpm
+    state: stopped
+    enabled: no 

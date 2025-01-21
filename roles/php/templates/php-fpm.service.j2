@@ -1,0 +1,16 @@
+[Unit]
+Description=The PHP {{ item.key }} FastCGI Process Manager
+After=network.target
+
+[Service]
+Type=notify
+PIDFile=/run/php/php{{ item.key }}-fpm.pid
+ExecStart=/usr/sbin/php-fpm{{ item.key }} --nodaemonize --fpm-config /etc/php/{{ item.key }}/fpm/php-fpm.conf
+ExecReload=/bin/kill -USR2 $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+TimeoutStopSec=5
+KillMode=mixed
+Restart=no
+
+[Install]
+WantedBy=multi-user.target 
