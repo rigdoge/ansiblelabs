@@ -49,6 +49,16 @@
     update_cache: yes
   when: repo_enable is success
 
+# 创建 MySQL 用户和组
+- name: Create MySQL user and group
+  user:
+    name: mysql
+    system: yes
+    group: mysql
+    home: /var/lib/mysql
+    shell: /bin/false
+    state: present
+
 # 创建必要的目录
 - name: Create MySQL directories
   file:
@@ -63,16 +73,6 @@
     - /var/lib/mysql
     - /var/log/mysql
     - /var/run/mysqld
-
-# 创建 MySQL 用户和组
-- name: Create MySQL user and group
-  user:
-    name: mysql
-    system: yes
-    group: mysql
-    home: /var/lib/mysql
-    shell: /bin/false
-    state: present
 
 # 安装 Percona Server Common
 - name: Install Percona Server Common
