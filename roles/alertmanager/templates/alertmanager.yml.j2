@@ -15,20 +15,20 @@ receivers:
     chat_id: 1171267236
     parse_mode: 'HTML'
     message: |
-      {{ if eq .Status "firing" }}
+      {% raw %}{{ if eq .Status "firing" }}{% endraw %}
       🔥 <b>告警触发</b>
-      <b>告警级别:</b> {{ .CommonLabels.severity }}
-      <b>告警名称:</b> {{ .CommonLabels.alertname }}
-      <b>告警主机:</b> {{ .CommonLabels.instance }}
-      <b>告警详情:</b> {{ .CommonAnnotations.description }}
-      <b>触发时间:</b> {{ .StartsAt.Format "2006-01-02 15:04:05" }}
-      {{ else }}
+      <b>告警级别:</b> {% raw %}{{ .CommonLabels.severity }}{% endraw %}
+      <b>告警名称:</b> {% raw %}{{ .CommonLabels.alertname }}{% endraw %}
+      <b>告警主机:</b> {% raw %}{{ .CommonLabels.instance }}{% endraw %}
+      <b>告警详情:</b> {% raw %}{{ .CommonAnnotations.description }}{% endraw %}
+      <b>触发时间:</b> {% raw %}{{ .StartsAt.Format "2006-01-02 15:04:05" }}{% endraw %}
+      {% raw %}{{ else }}{% endraw %}
       ✅ <b>告警恢复</b>
-      <b>告警级别:</b> {{ .CommonLabels.severity }}
-      <b>告警名称:</b> {{ .CommonLabels.alertname }}
-      <b>告警主机:</b> {{ .CommonLabels.instance }}
-      <b>恢复时间:</b> {{ .EndsAt.Format "2006-01-02 15:04:05" }}
-      {{ end }}
+      <b>告警级别:</b> {% raw %}{{ .CommonLabels.severity }}{% endraw %}
+      <b>告警名称:</b> {% raw %}{{ .CommonLabels.alertname }}{% endraw %}
+      <b>告警主机:</b> {% raw %}{{ .CommonLabels.instance }}{% endraw %}
+      <b>恢复时间:</b> {% raw %}{{ .EndsAt.Format "2006-01-02 15:04:05" }}{% endraw %}
+      {% raw %}{{ end }}{% endraw %}
 
 inhibit_rules:
   - source_match:
