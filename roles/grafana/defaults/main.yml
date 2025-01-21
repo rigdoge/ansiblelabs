@@ -1,0 +1,22 @@
+---
+# Grafana 管理员密码
+grafana_admin_password: "grafana"
+
+# Grafana 配置
+grafana_http_port: 3000
+grafana_http_addr: "localhost"
+
+# 数据源配置
+grafana_datasources:
+  - name: "Prometheus"
+    type: "prometheus"
+    url: "http://localhost:9090"
+    access: "proxy"
+    is_default: true
+
+# 仪表盘配置
+grafana_dashboards:
+  - name: "Nginx Status"
+    template: "nginx.json.j2"
+  - name: "PHP-FPM Status"
+    template: "php-fpm.json.j2" 

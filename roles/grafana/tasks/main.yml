@@ -29,6 +29,22 @@
     port: 3000
     timeout: 30
 
+# 修改默认密码
+- name: Change Grafana admin password
+  uri:
+    url: "http://localhost:3000/api/admin/users/1/password"
+    method: PUT
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    body_format: json
+    body:
+      oldPassword: "admin"
+      newPassword: "{{ grafana_admin_password | default('grafana') }}"
+    status_code: [200, 400]  # 400 表示密码已更改
+    headers:
+      Content-Type: "application/json"
+
 # 安装 grafana-cli 工具
 - name: Install grafana-cli tools
   apt:
@@ -41,7 +57,7 @@
     url: "http://localhost:3000/api/datasources"
     method: POST
     user: admin
-    password: admin
+    password: "{{ grafana_admin_password | default('grafana') }}"
     force_basic_auth: yes
     body_format: json
     body:
@@ -60,11 +76,28 @@
     url: "http://localhost:3000/api/dashboards/db"
     method: POST
     user: admin
-    password: admin
+    password: "{{ grafana_admin_password | default('grafana') }}"
     force_basic_auth: yes
     body_format: json
     body:
-      dashboard: "{{ lookup('file', 'templates/nginx-dashboard.json') | from_json }}"
+      dashboard: "{{ lookup('file', 'templates/dashboards/nginx.json.j2') | from_json }}"
+      overwrite: true
+      message: "Updated by Ansible"
+    status_code: 200
+    headers:
+      Content-Type: "application/json"
+
+# 导入 PHP-FPM 仪表盘
+- name: Import PHP-FPM dashboard
+  uri:
+    url: "http://localhost:3000/api/dashboards/db"
+    method: POST
+    user: admin
+    password: "{{ grafana_admin_password | default('grafana') }}"
+    force_basic_auth: yes
+    body_format: json
+    body:
+      dashboard: "{{ lookup('file', 'templates/dashboards/php-fpm.json.j2') | from_json }}"
       overwrite: true
       message: "Updated by Ansible"
     status_code: 200
