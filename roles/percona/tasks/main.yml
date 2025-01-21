@@ -39,17 +39,13 @@
 
 # 启用 Percona Server 8.0 仓库
 - name: Enable Percona Server 8.0 repository
-  shell: |
-    percona-release setup ps80
-    percona-release enable ps80 release
+  command: percona-release setup ps80
   when: repo_install is success
   register: repo_enable
 
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
-  shell: |
-    percona-release setup tools
-    percona-release enable tools release
+  command: percona-release setup tools
   when: repo_install is success
   register: tools_enable
 
@@ -130,8 +126,7 @@
 # 安装 Percona Server Common
 - name: Install Percona Server Common
   apt:
-    name: 
-      - percona-server-common-8.0
+    name: percona-server-common-8.0
     state: present
     force: yes
   register: common_install
@@ -155,8 +150,7 @@
 # 安装 Percona Server Client
 - name: Install Percona Server Client
   apt:
-    name: 
-      - percona-server-client-8.0
+    name: percona-server-client-8.0
     state: present
     force: yes
   when: common_install is success
