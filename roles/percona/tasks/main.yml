@@ -39,13 +39,13 @@
 
 # 启用 Percona Server 8.0 仓库
 - name: Enable Percona Server 8.0 repository
-  command: percona-release setup ps80
+  command: percona-release setup -y ps80
   when: repo_install is success
   register: repo_enable
 
 # 验证 Percona 仓库状态
 - name: Check Percona repository status
-  command: percona-release status
+  command: percona-release show
   register: repo_status
 
 - name: Display repository status
@@ -63,7 +63,7 @@
 
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
-  command: percona-release setup tools
+  command: percona-release setup -y tools
   when: repo_install is success
   register: tools_enable
 
