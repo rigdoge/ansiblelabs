@@ -141,6 +141,8 @@
       url: "https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-client_8.0.40-31-1.bookworm_arm64.deb"
     - name: percona-server-server.deb
       url: "https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-server_8.0.40-31-1.bookworm_arm64.deb"
+    - name: percona-xtrabackup.deb
+      url: "https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.40-31/binary/debian/bookworm/x86_64/percona-xtrabackup-80_8.0.40-31-1.bookworm_arm64.deb"
   register: download_debs
 
 # 安装 Percona Server Common
@@ -169,6 +171,14 @@
   when: client_install is success
   notify: restart mysql
 
+# 安装 Percona XtraBackup
+- name: Install Percona XtraBackup
+  apt:
+    deb: "/tmp/percona-xtrabackup.deb"
+    state: present
+    force: yes
+  when: client_install is success
+
 # 清理下载的文件
 - name: Clean up downloaded files
   file:
@@ -178,6 +188,7 @@
     - percona-server-common.deb
     - percona-server-client.deb
     - percona-server-server.deb
+    - percona-xtrabackup.deb
 
 # 配置 MySQL
 - name: Create MySQL configuration file
