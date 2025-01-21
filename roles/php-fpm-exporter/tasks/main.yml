@@ -12,31 +12,42 @@
     system: yes
     create_home: no
 
-- name: Download php-fpm-exporter
+- name: Download PHP-FPM Exporter
   get_url:
-    url: https://github.com/hipages/php-fpm_exporter/releases/download/v2.2.0/php-fpm_exporter_2.2.0_linux_amd64
-    dest: /usr/local/bin/php-fpm-exporter
-    mode: '0755'
-    owner: php-fpm-exporter
-    group: php-fpm-exporter
+    url: https://github.com/hipages/php-fpm_exporter/releases/download/v2.2.0/php-fpm_exporter_2.2.0_linux_amd64.tar.gz
+    dest: /tmp/php-fpm_exporter.tar.gz
+    mode: '0644'
 
-- name: Create php-fpm-exporter systemd service
+- name: Create PHP-FPM Exporter directory
+  file:
+    path: /usr/local/bin
+    state: directory
+    mode: '0755'
+
+- name: Extract PHP-FPM Exporter
+  unarchive:
+    src: /tmp/php-fpm_exporter.tar.gz
+    dest: /usr/local/bin
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+    creates: /usr/local/bin/php-fpm_exporter
+
+- name: Create PHP-FPM Exporter configuration
+  template:
+    src: php-fpm-exporter.yaml.j2
+    dest: /etc/php-fpm_exporter.yaml
+    mode: '0644'
+  notify: restart php-fpm-exporter
+
+- name: Create PHP-FPM Exporter service
   template:
     src: php-fpm-exporter.service.j2
     dest: /etc/systemd/system/php-fpm-exporter.service
     mode: '0644'
   notify: restart php-fpm-exporter
 
-- name: Create php-fpm-exporter configuration
-  template:
-    src: php-fpm-exporter.yaml.j2
-    dest: /etc/php-fpm-exporter/config.yaml
-    mode: '0644'
-  notify: restart php-fpm-exporter
-
-- name: Ensure php-fpm-exporter service is enabled and started
-  systemd:
+- name: Ensure PHP-FPM Exporter service is enabled and started
+  service:
     name: php-fpm-exporter
     state: started
-    enabled: yes
-    daemon_reload: yes 
+    enabled: yes 

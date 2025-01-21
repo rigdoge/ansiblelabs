@@ -1,21 +1,12 @@
 [Unit]
 Description=PHP-FPM Exporter
-Documentation=https://github.com/hipages/php-fpm_exporter
 After=network.target
 
 [Service]
 Type=simple
-User=php-fpm-exporter
-Group=php-fpm-exporter
-ExecStart=/usr/local/bin/php-fpm-exporter server \
-    --phpfpm.scrape-uri=unix:///run/php/php{{ php_default_version }}-fpm.sock;/status \
-    --phpfpm.fix-process-count=true \
-    --web.listen-address=:9253 \
-    --web.telemetry-path=/metrics \
-    --log.level=info
-
+User=root
+ExecStart=/usr/local/bin/php-fpm_exporter server --phpfpm.scrape-uri=unix:///run/php/php{{ php_default_version }}-fpm.sock;/status --config.file=/etc/php-fpm_exporter.yaml
 Restart=always
-RestartSec=10
 
 [Install]
 WantedBy=multi-user.target 

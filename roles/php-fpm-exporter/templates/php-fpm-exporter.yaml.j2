@@ -1,11 +1,20 @@
-pools:
+---
+phpfpm:
+  # 为每个 PHP 版本配置监控
 {% for version, config in php_available_versions.items() %}
 {% if config.state == 'present' %}
-  - name: php{{ version }}
-    endpoint: unix:///run/php/php{{ version }}-fpm.sock
-    path: /status
+  - endpoint: unix:///run/php/php{{ version }}-fpm.sock;/status
+    scrape_uri: unix:///run/php/php{{ version }}-fpm.sock;/status
+    namespace: php_fpm_{{ version | replace('.', '_') }}
 {% endif %}
 {% endfor %}
+
+web:
+  listen_address: ":9253"
+  telemetry_path: "/metrics"
+
+log:
+  level: info
 
 global:
   # 全局超时设置
