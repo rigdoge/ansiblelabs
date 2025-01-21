@@ -4,9 +4,11 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
-ExecStart=/usr/local/bin/php-fpm_exporter server --phpfpm.scrape-uri=unix:///run/php/php{{ php_default_version }}-fpm.sock;/status --config.file=/etc/php-fpm_exporter.yaml
+User=php-fpm-exporter
+Group=php-fpm-exporter
+ExecStart=/usr/local/bin/php-fpm-exporter --phpfpm.scrape-uri=http://localhost:{{ php_available_versions[php_default_version].status_port }}/status
 Restart=always
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target 

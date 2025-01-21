@@ -14,9 +14,9 @@
 
 - name: Download PHP-FPM Exporter
   get_url:
-    url: https://github.com/hipages/php-fpm_exporter/releases/download/v2.2.0/php-fpm_exporter_2.2.0_linux_amd64.tar.gz
-    dest: /tmp/php-fpm_exporter.tar.gz
-    mode: '0644'
+    url: "https://github.com/hipages/php-fpm_exporter/releases/download/v2.2.0/php-fpm_exporter_2.2.0_linux_{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+    dest: /usr/local/bin/php-fpm-exporter
+    mode: '0755'
 
 - name: Create PHP-FPM Exporter directory
   file:
@@ -35,7 +35,7 @@
 - name: Create PHP-FPM Exporter configuration
   template:
     src: php-fpm-exporter.yaml.j2
-    dest: /etc/php-fpm_exporter.yaml
+    dest: /etc/php-fpm-exporter.yaml
     mode: '0644'
   notify: restart php-fpm-exporter
 
@@ -47,7 +47,8 @@
   notify: restart php-fpm-exporter
 
 - name: Ensure PHP-FPM Exporter service is enabled and started
-  service:
+  systemd:
     name: php-fpm-exporter
     state: started
-    enabled: yes 
+    enabled: yes
+    daemon_reload: yes 

@@ -1,5 +1,6 @@
 ---
 - name: restart php-fpm-exporter
-  service:
+  systemd:
     name: php-fpm-exporter
-    state: restarted 
+    state: restarted
+    daemon_reload: yes 
