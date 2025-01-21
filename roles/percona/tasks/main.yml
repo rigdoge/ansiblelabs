@@ -17,8 +17,20 @@
       - lsb-release
       - wget
       - apt-transport-https
+      - python3-pip
+      - python3-dev
+      - default-libmysqlclient-dev
+      - build-essential
     state: present
     update_cache: yes
+
+# 安装 Python MySQL 模块
+- name: Install Python MySQL module
+  pip:
+    name: 
+      - mysqlclient
+      - PyMySQL
+    state: present
 
 # 下载 Percona 仓库包
 - name: Download Percona repository package
