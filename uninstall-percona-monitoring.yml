@@ -1,0 +1,42 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    # 删除 Prometheus 告警规则
+    - name: Remove MySQL alert rules
+      file:
+        path: /etc/prometheus/mysql.rules.yml
+        state: absent
+      notify: reload prometheus
+
+    # 删除 Prometheus 抓取配置
+    - name: Remove MySQL scrape job from Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - MySQL"
+        state: absent
+      notify: reload prometheus
+
+    # 删除 Grafana 仪表盘
+    - name: Remove MySQL dashboard directory
+      file:
+        path: /etc/grafana/provisioning/dashboards/mysql
+        state: absent
+      notify: restart grafana
+
+    - name: Remove MySQL dashboard configuration
+      file:
+        path: /etc/grafana/provisioning/dashboards/mysql.yml
+        state: absent
+      notify: restart grafana
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded
+
+    - name: restart grafana
+      systemd:
+        name: grafana-server
+        state: restarted 

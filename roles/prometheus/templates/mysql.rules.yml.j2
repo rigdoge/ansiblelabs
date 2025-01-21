@@ -1,0 +1,52 @@
+groups:
+  - name: mysql_alerts
+    rules:
+      # MySQL 实例存活监控
+      - alert: MySQLDown
+        expr: mysql_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL 实例已停止 ({{ $labels.instance }})"
+          description: "MySQL 实例已经停止运行超过 1 分钟\n  实例: {{ $labels.instance }}"
+
+      # 连接数监控
+      - alert: MySQLHighThreadsRunning
+        expr: mysql_global_status_threads_running > mysql_global_variables_max_connections * 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 运行线程数过高 ({{ $labels.instance }})"
+          description: "MySQL 运行线程数超过最大连接数的 80%\n  实例: {{ $labels.instance }}\n  当前值: {{ $value }}"
+
+      # 慢查询监控
+      - alert: MySQLSlowQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 出现慢查询 ({{ $labels.instance }})"
+          description: "MySQL 在过去 5 分钟内出现慢查询\n  实例: {{ $labels.instance }}\n  当前值: {{ $value }}"
+
+      # 复制延迟监控
+      - alert: MySQLReplicationLag
+        expr: mysql_slave_status_seconds_behind_master > 300
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 复制延迟过高 ({{ $labels.instance }})"
+          description: "MySQL 从库复制延迟超过 5 分钟\n  实例: {{ $labels.instance }}\n  当前延迟: {{ $value }}秒"
+
+      # 磁盘空间监控
+      - alert: MySQLTablespaceFull
+        expr: mysql_info_schema_table_spaces_data_free_bytes / mysql_info_schema_table_spaces_data_length_bytes < 0.1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "MySQL 表空间接近满载 ({{ $labels.instance }})"
+          description: "MySQL 表空间剩余空间不足 10%\n  实例: {{ $labels.instance }}\n  表空间: {{ $labels.table_schema }}.{{ $labels.table_name }}" 

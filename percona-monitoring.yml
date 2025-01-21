@@ -1,0 +1,56 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    # 添加 Prometheus 告警规则
+    - name: Create MySQL alert rules
+      template:
+        src: roles/prometheus/templates/mysql.rules.yml.j2
+        dest: /etc/prometheus/mysql.rules.yml
+        mode: '0644'
+      notify: reload prometheus
+
+    # 添加 Prometheus 抓取配置
+    - name: Add MySQL scrape job to Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - MySQL"
+        block: |
+          # MySQL Exporter
+          - job_name: 'mysql'
+            static_configs:
+              - targets: ['localhost:{{ mysql_exporter_port }}']
+            scrape_interval: 15s
+      notify: reload prometheus
+
+    # 添加 Grafana 仪表盘
+    - name: Create MySQL dashboard directory
+      file:
+        path: /etc/grafana/provisioning/dashboards/mysql
+        state: directory
+        mode: '0755'
+
+    - name: Copy MySQL dashboard configuration
+      template:
+        src: roles/grafana/templates/provisioning/dashboards/mysql.yml.j2
+        dest: /etc/grafana/provisioning/dashboards/mysql.yml
+        mode: '0644'
+      notify: restart grafana
+
+    - name: Copy MySQL dashboard
+      template:
+        src: roles/grafana/templates/dashboards/mysql.json.j2
+        dest: /etc/grafana/provisioning/dashboards/mysql/mysql.json
+        mode: '0644'
+      notify: restart grafana
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded
+
+    - name: restart grafana
+      systemd:
+        name: grafana-server
+        state: restarted 

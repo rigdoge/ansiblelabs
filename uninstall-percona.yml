@@ -1,0 +1,63 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    # 停止服务
+    - name: Stop MySQL Exporter service
+      systemd:
+        name: mysql_exporter
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Stop MySQL service
+      systemd:
+        name: mysql
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    # 删除 MySQL Exporter
+    - name: Remove MySQL Exporter binary
+      file:
+        path: /usr/local/bin/mysqld_exporter
+        state: absent
+
+    - name: Remove MySQL Exporter service file
+      file:
+        path: /etc/systemd/system/mysql_exporter.service
+        state: absent
+
+    # 卸载 Percona Server
+    - name: Remove Percona Server packages
+      apt:
+        name:
+          - percona-server-server
+          - percona-server-client
+          - percona-server-common
+          - percona-toolkit
+        state: absent
+        purge: yes
+
+    # 删除配置文件和数据
+    - name: Remove MySQL configuration and data
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/mysql
+        - /var/lib/mysql
+        - /var/log/mysql
+        - /var/run/mysqld
+        - /var/backup/mysql
+
+    # 删除 Percona 仓库
+    - name: Remove Percona repository
+      file:
+        path: /etc/apt/sources.list.d/percona-release.list
+        state: absent
+
+    # 更新软件包缓存
+    - name: Update apt cache
+      apt:
+        update_cache: yes 
