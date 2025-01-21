@@ -38,6 +38,7 @@
           - percona-toolkit
         state: absent
         purge: yes
+        autoremove: yes
 
     # 删除配置文件和数据
     - name: Remove MySQL configuration and data
@@ -50,14 +51,40 @@
         - /var/log/mysql
         - /var/run/mysqld
         - /var/backup/mysql
+        - /etc/apt/keyrings/percona-keyring.gpg
+        - /etc/apt/sources.list.d/percona-ps-80.list
+        - /etc/apt/trusted.gpg.d/percona.gpg
 
-    # 删除 Percona 仓库
-    - name: Remove Percona repository
-      file:
-        path: /etc/apt/sources.list.d/percona-release.list
+    # 删除用户和组
+    - name: Remove MySQL user and group
+      user:
+        name: mysql
         state: absent
+        remove: yes
+      ignore_errors: yes
+
+    - name: Remove MySQL group
+      group:
+        name: mysql
+        state: absent
+      ignore_errors: yes
+
+    # 清理系统日志
+    - name: Clean systemd journal for MySQL
+      command: journalctl --vacuum-time=1s --unit=mysql
+      ignore_errors: yes
+
+    - name: Clean systemd journal for MySQL Exporter
+      command: journalctl --vacuum-time=1s --unit=mysql_exporter
+      ignore_errors: yes
 
     # 更新软件包缓存
     - name: Update apt cache
       apt:
-        update_cache: yes 
+        update_cache: yes
+
+    # 清理不再需要的依赖
+    - name: Autoremove packages
+      apt:
+        autoremove: yes
+        purge: yes 
