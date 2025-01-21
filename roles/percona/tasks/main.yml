@@ -16,22 +16,30 @@
       - software-properties-common
       - lsb-release
       - wget
+      - apt-transport-https
     state: present
     update_cache: yes
+
+# 创建 keyrings 目录
+- name: Ensure keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
 
 # 下载并导入 Percona GPG 密钥
 - name: Download Percona GPG key
   shell: |
-    wget -qO - https://downloads.percona.com/public.key | gpg --dearmor > /etc/apt/trusted.gpg.d/percona.gpg
+    curl -fsSL https://repo.percona.com/apt/percona-release.key | sudo gpg --dearmor -o /etc/apt/keyrings/percona-keyring.gpg
   args:
-    creates: /etc/apt/trusted.gpg.d/percona.gpg
+    creates: /etc/apt/keyrings/percona-keyring.gpg
 
 # 添加 Percona 仓库
 - name: Add Percona repository
   apt_repository:
-    repo: "deb [signed-by=/etc/apt/trusted.gpg.d/percona.gpg] https://downloads.percona.com/percona/apt {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/keyrings/percona-keyring.gpg] http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main"
     state: present
-    filename: percona
+    filename: percona-ps-80
     update_cache: yes
 
 # 安装 Percona Server
