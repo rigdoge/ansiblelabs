@@ -41,8 +41,8 @@
 - name: Enable Percona Server 8.0 repository
   shell: |
     percona-release disable all
-    percona-release setup ps80
-    percona-release enable ps80 release
+    percona-release setup ps-80
+    percona-release enable ps-80 release
   when: repo_install is success
   register: repo_enable
 
