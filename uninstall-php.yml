@@ -1,13 +1,19 @@
 ---
 - hosts: all
   become: yes
+  vars:
+    php_versions:
+      - "8.1"
+      - "8.2"
+      - "8.3"
+      - "8.4"
   tasks:
     - name: Stop PHP-FPM services
       service:
-        name: "php{{ item.key }}-fpm"
+        name: "php{{ item }}-fpm"
         state: stopped
         enabled: no
-      loop: "{{ php_available_versions | dict2items }}"
+      loop: "{{ php_versions }}"
       ignore_errors: yes
 
     - name: Remove PHP packages and dependencies
