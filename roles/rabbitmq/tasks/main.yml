@@ -1,85 +1,76 @@
 ---
-# 添加 RabbitMQ Erlang 仓库
-- name: Add RabbitMQ Erlang signing key
+# 安装基础依赖
+- name: Install basic dependencies
+  apt:
+    name:
+      - curl
+      - gnupg
+      - apt-transport-https
+    state: present
+
+# 添加 Team RabbitMQ 的密钥
+- name: Add Team RabbitMQ main signing key
   get_url:
-    url: https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key
-    dest: /usr/share/keyrings/rabbitmq-erlang.asc
+    url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
+    dest: /usr/share/keyrings/com.rabbitmq.team.gpg
     mode: '0644'
 
-- name: Add RabbitMQ Erlang repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq-erlang.asc] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq-erlang
-    update_cache: yes
-
-# 添加 RabbitMQ 仓库
-- name: Add RabbitMQ signing key
+# 添加 RabbitMQ Erlang 仓库密钥
+- name: Add RabbitMQ Erlang repository key
   get_url:
-    url: https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key
-    dest: /usr/share/keyrings/rabbitmq.asc
+    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
+    dest: /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
     mode: '0644'
 
-- name: Add RabbitMQ repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.asc] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq
+# 添加 RabbitMQ Server 仓库密钥
+- name: Add RabbitMQ Server repository key
+  get_url:
+    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-server.9F4587F226208342.key
+    dest: /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
+    mode: '0644'
+
+# 配置 RabbitMQ 仓库
+- name: Configure RabbitMQ repositories
+  template:
+    src: rabbitmq.list.j2
+    dest: /etc/apt/sources.list.d/rabbitmq.list
+    mode: '0644'
+
+# 更新包索引
+- name: Update package indices
+  apt:
     update_cache: yes
 
-# 获取系统架构
-- name: Get system architecture
-  command: dpkg --print-architecture
-  register: system_architecture
-  changed_when: false
-
-# 安装 Erlang 依赖
+# 安装 Erlang 包
 - name: Install Erlang packages
   apt:
     name:
-      - erlang
-      - erlang-common
-      - erlang-mnesia
-      - erlang-runtime-tools
-      - erlang-asn1
-      - erlang-crypto
-      - erlang-public-key
-      - erlang-ssl
-      - erlang-syntax-tools
-      - erlang-tools
-      - erlang-inets
-      - erlang-dev
-      - erlang-edoc
-      - erlang-eunit
-      - erlang-os-mon
-      - erlang-parsetools
-      - erlang-xmerl
+      - erlang-base=1:26.2.5.6-1
+      - erlang-asn1=1:26.2.5.6-1
+      - erlang-crypto=1:26.2.5.6-1
+      - erlang-eldap=1:26.2.5.6-1
+      - erlang-ftp=1:26.2.5.6-1
+      - erlang-inets=1:26.2.5.6-1
+      - erlang-mnesia=1:26.2.5.6-1
+      - erlang-os-mon=1:26.2.5.6-1
+      - erlang-parsetools=1:26.2.5.6-1
+      - erlang-public-key=1:26.2.5.6-1
+      - erlang-runtime-tools=1:26.2.5.6-1
+      - erlang-snmp=1:26.2.5.6-1
+      - erlang-ssl=1:26.2.5.6-1
+      - erlang-syntax-tools=1:26.2.5.6-1
+      - erlang-tftp=1:26.2.5.6-1
+      - erlang-tools=1:26.2.5.6-1
+      - erlang-xmerl=1:26.2.5.6-1
     state: present
-    update_cache: yes
-    allow_unauthenticated: yes
-    force: yes
-
-# 安装其他依赖
-- name: Install other required packages
-  apt:
-    name:
-      - socat
-      - logrotate
-      - python3-pip
-    state: present
-
-# 下载对应架构的 RabbitMQ
-- name: Download RabbitMQ server package
-  get_url:
-    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-    dest: /tmp/rabbitmq-server.deb
-    mode: '0644'
 
 # 安装 RabbitMQ
 - name: Install RabbitMQ server
   apt:
-    deb: /tmp/rabbitmq-server.deb
+    name: rabbitmq-server
     state: present
+    update_cache: yes
+    fix_missing: yes
 
 # 配置 RabbitMQ
 - name: Create RabbitMQ configuration directory
