@@ -13,18 +13,18 @@
     filename: rabbitmq
     update_cache: yes
 
-# 添加 Erlang Solutions 仓库
-- name: Add Erlang Solutions GPG key
+# 添加 RabbitMQ Erlang 仓库
+- name: Add RabbitMQ Erlang signing key
   get_url:
-    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
-    dest: /usr/share/keyrings/erlang-solutions.asc
+    url: https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key
+    dest: /usr/share/keyrings/rabbitmq-erlang.asc
     mode: '0644'
 
-- name: Add Erlang Solutions repository
+- name: Add RabbitMQ Erlang repository
   apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/erlang-solutions.asc] https://packages.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib"
+    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq-erlang.asc] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
     state: present
-    filename: erlang-solutions
+    filename: rabbitmq-erlang
     update_cache: yes
 
 # 获取系统架构
@@ -37,7 +37,7 @@
 - name: Install required packages
   apt:
     name:
-      - "esl-erlang"
+      - "erlang"
       - socat
       - logrotate
       - python3-pip
