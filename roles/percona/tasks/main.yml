@@ -49,8 +49,15 @@
     update_cache: yes
   when: repo_enable is success
 
-# 创建 MySQL 用户和组
-- name: Create MySQL user and group
+# 创建 MySQL 组
+- name: Create MySQL group
+  group:
+    name: mysql
+    system: yes
+    state: present
+
+# 创建 MySQL 用户
+- name: Create MySQL user
   user:
     name: mysql
     system: yes
