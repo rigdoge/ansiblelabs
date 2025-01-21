@@ -1,0 +1,71 @@
+---
+- name: Uninstall Monitoring Stack
+  hosts: nginx
+  become: yes
+  tasks:
+    # 停止并禁用服务
+    - name: Stop and disable services
+      systemd:
+        name: "{{ item }}"
+        state: stopped
+        enabled: no
+      with_items:
+        - prometheus
+        - alertmanager
+      ignore_errors: yes
+
+    # 删除二进制文件
+    - name: Remove binaries
+      file:
+        path: "/usr/local/bin/{{ item }}"
+        state: absent
+      with_items:
+        - prometheus
+        - promtool
+        - alertmanager
+
+    # 删除用户和组
+    - name: Remove users
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+      with_items:
+        - prometheus
+        - alertmanager
+
+    # 删除配置目录
+    - name: Remove configuration directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/prometheus
+        - /var/lib/prometheus
+        - /etc/alertmanager
+        - /var/lib/alertmanager
+
+    # 删除服务文件
+    - name: Remove systemd service files
+      file:
+        path: "/etc/systemd/system/{{ item }}"
+        state: absent
+      with_items:
+        - prometheus.service
+        - alertmanager.service
+
+    # 重新加载 systemd
+    - name: Reload systemd
+      systemd:
+        daemon_reload: yes
+
+    # 清理临时文件
+    - name: Clean up temporary files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /tmp/prometheus.tar.gz
+        - /tmp/alertmanager.tar.gz
+        - /tmp/prometheus-*
+        - /tmp/alertmanager-* 
