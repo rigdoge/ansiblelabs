@@ -43,11 +43,17 @@
   when: repo_install is success
   register: repo_enable
 
+# 启用 Percona Tools 仓库
+- name: Enable Percona Tools repository
+  command: percona-release enable tools
+  when: repo_install is success
+  register: tools_enable
+
 # 更新 APT 缓存
 - name: Update apt cache
   apt:
     update_cache: yes
-  when: repo_enable is success
+  when: repo_enable is success or tools_enable is success
 
 # 创建 MySQL 组
 - name: Create MySQL group
