@@ -16,6 +16,15 @@
     state: present
     update_cache: yes
 
+# 配置 Grafana 初始密码
+- name: Configure Grafana admin password
+  lineinfile:
+    path: /etc/grafana/grafana.ini
+    regexp: "^;?admin_password = "
+    line: "admin_password = {{ grafana_admin_password | default('grafana') }}"
+    backup: yes
+  notify: restart grafana
+
 - name: Start and enable Grafana
   systemd:
     name: grafana-server
@@ -38,27 +47,6 @@
   until: result.status == 200
   retries: 24
   delay: 5
-
-# 修改默认密码
-- name: Change Grafana admin password
-  uri:
-    url: "http://localhost:3000/api/admin/users/1/password"
-    method: PUT
-    user: admin
-    password: admin
-    force_basic_auth: yes
-    body_format: json
-    body:
-      oldPassword: "admin"
-      newPassword: "{{ grafana_admin_password | default('grafana') }}"
-    status_code: [200, 400]  # 400 表示密码已更改
-    headers:
-      Content-Type: "application/json"
-
-# 简单等待确保密码生效
-- name: Wait for password change to take effect
-  pause:
-    seconds: 30
 
 # 安装 grafana-cli 工具
 - name: Install grafana-cli tools
