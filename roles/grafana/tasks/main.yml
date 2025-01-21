@@ -27,7 +27,7 @@
 - name: Wait for Grafana to start
   wait_for:
     port: 3000
-    timeout: 60
+    timeout: 120
 
 # 等待 Grafana API 可用
 - name: Wait for Grafana API to be ready
@@ -36,7 +36,7 @@
     method: GET
   register: result
   until: result.status == 200
-  retries: 12
+  retries: 24
   delay: 5
 
 # 修改默认密码
@@ -58,7 +58,7 @@
 # 等待密码更改生效
 - name: Wait for password change to take effect
   pause:
-    seconds: 5
+    seconds: 10
 
 # 安装 grafana-cli 工具
 - name: Install grafana-cli tools
@@ -86,8 +86,8 @@
       Content-Type: "application/json"
   register: result
   until: result.status in [200, 409]
-  retries: 3
-  delay: 5
+  retries: 6
+  delay: 10
 
 # 导入 Nginx 仪表盘
 - name: Import Nginx dashboard
