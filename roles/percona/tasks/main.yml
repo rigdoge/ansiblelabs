@@ -13,16 +13,17 @@
 
 # 添加 Percona 仓库密钥
 - name: Add Percona GPG key
-  apt_key:
-    url: https://downloads.percona.com/public.key
-    state: present
+  shell: |
+    curl -fsSL https://repo.percona.com/apt/percona-release.key | gpg --dearmor -o /usr/share/keyrings/percona-keyring.gpg
+  args:
+    creates: /usr/share/keyrings/percona-keyring.gpg
 
 # 添加 Percona 仓库
 - name: Add Percona repository
   apt_repository:
-    repo: "deb [arch={{ ansible_architecture }}] https://downloads.percona.com/downloads/percona-distribution-mysql-80/percona-distribution-mysql-80-8.0.35/binary/debian/{{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/usr/share/keyrings/percona-keyring.gpg] https://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main"
     state: present
-    filename: percona-mysql-80
+    filename: percona-release
     update_cache: yes
 
 # 安装 Percona Server
