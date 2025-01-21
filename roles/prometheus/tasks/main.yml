@@ -70,6 +70,15 @@
     mode: '0644'
   notify: restart prometheus
 
+- name: Copy Nginx alert rules
+  template:
+    src: nginx.rules.yml
+    dest: /etc/prometheus/nginx.rules.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  notify: restart prometheus
+
 - name: Create Prometheus systemd service
   template:
     src: prometheus.service.j2
