@@ -7,6 +7,9 @@
 编辑 `roles/php/defaults/main.yml` 文件来配置需要的 PHP 版本：
 
 ```yaml
+# 默认使用的 PHP 版本
+php_default_version: "8.2"  # 这里设置默认版本
+
 php_available_versions:
   "8.3":
     status_port: 9003
@@ -15,12 +18,17 @@ php_available_versions:
   "8.2":
     status_port: 9002
     priority: 20
-    state: present  # 当前安装
+    state: present  # 当前安装，也是默认版本
   "8.1":
     status_port: 9001
     priority: 10
     state: present  # 当前安装
 ```
+
+默认版本决定了：
+1. 系统默认的 PHP CLI 版本
+2. PHP-FPM Exporter 监控的主要版本
+3. Web 服务器默认使用的 PHP-FPM socket
 
 ### 2. 安装 PHP
 
