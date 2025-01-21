@@ -3,11 +3,20 @@ groups:
   rules:
   - alert: NginxDown
     expr: nginx_up == 0
+    for: 10s
     labels:
       severity: critical
     annotations:
       summary: "Nginx 已停止运行"
       description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 Nginx 已停止运行"
+
+  - alert: NginxRestarted
+    expr: changes(nginx_up[5m]) > 0
+    labels:
+      severity: warning
+    annotations:
+      summary: "Nginx 发生重启"
+      description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 Nginx 在过去5分钟内发生了重启"
 
   - alert: NginxRecovered
     expr: nginx_up == 1 and changes(nginx_up[1m]) > 0

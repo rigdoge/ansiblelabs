@@ -1,5 +1,12 @@
 ---
 - name: restart nginx
-  service:
+  systemd:
     name: nginx
-    state: restarted 
+    state: restarted
+    daemon_reload: yes
+
+- name: stop nginx
+  systemd:
+    name: nginx
+    state: stopped
+    enabled: no  # 同时禁用自启动 
