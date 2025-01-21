@@ -20,27 +20,32 @@
     state: present
     update_cache: yes
 
-# 创建 keyrings 目录
-- name: Ensure keyrings directory exists
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
+# 下载 Percona 仓库包
+- name: Download Percona repository package
+  get_url:
+    url: "https://repo.percona.com/apt/percona-release_latest.{{ ansible_distribution_release }}_all.deb"
+    dest: "/tmp/percona-release.deb"
+  register: repo_download
 
-# 下载并导入 Percona GPG 密钥
-- name: Download Percona GPG key
-  shell: |
-    curl -fsSL https://repo.percona.com/apt/percona-release.key | sudo gpg --dearmor -o /etc/apt/keyrings/percona-keyring.gpg
-  args:
-    creates: /etc/apt/keyrings/percona-keyring.gpg
-
-# 添加 Percona 仓库
-- name: Add Percona repository
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/percona-keyring.gpg] http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main"
+# 安装 Percona 仓库包
+- name: Install Percona repository package
+  apt:
+    deb: "/tmp/percona-release.deb"
     state: present
-    filename: percona-ps-80
+  when: repo_download is success
+  register: repo_install
+
+# 启用 Percona Server 8.0 仓库
+- name: Enable Percona Server 8.0 repository
+  command: percona-release enable ps-80
+  when: repo_install is success
+  register: repo_enable
+
+# 更新 APT 缓存
+- name: Update apt cache
+  apt:
     update_cache: yes
+  when: repo_enable is success
 
 # 安装 Percona Server
 - name: Install Percona Server
