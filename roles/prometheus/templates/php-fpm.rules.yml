@@ -1,0 +1,38 @@
+groups:
+- name: php_fpm_alerts
+  rules:
+  - alert: PHPFPMDown
+    expr: phpfpm_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "PHP-FPM 已停止运行"
+      description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 PHP-FPM {{ php_default_version }} 已停止运行"
+
+  - alert: PHPFPMHighProcessCount
+    expr: phpfpm_processes_total{state="active"} > 30
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 进程数过高"
+      description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 PHP-FPM 活跃进程数达到 {% raw %}{{ $value }}{% endraw %}"
+
+  - alert: PHPFPMHighMemoryUsage
+    expr: phpfpm_processes_memory_bytes / 1024 / 1024 > 1024  # 1GB
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 内存使用过高"
+      description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 PHP-FPM 内存使用达到 {% raw %}{{ $value | humanize }}{% endraw %}MB"
+
+  - alert: PHPFPMSlowRequests
+    expr: rate(phpfpm_slow_requests_total[5m]) > 0
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 出现慢请求"
+      description: "服务器 {% raw %}{{ $labels.instance }}{% endraw %} 的 PHP-FPM 在过去5分钟内出现慢请求" 
