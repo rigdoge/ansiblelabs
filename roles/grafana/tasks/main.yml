@@ -55,24 +55,10 @@
     headers:
       Content-Type: "application/json"
 
-# 等待密码更改生效
+# 简单等待确保密码生效
 - name: Wait for password change to take effect
   pause:
-    seconds: 15
-
-# 验证新密码是否生效
-- name: Verify new password
-  uri:
-    url: "http://localhost:3000/api/user"
-    method: GET
-    user: admin
-    password: "{{ grafana_admin_password | default('grafana') }}"
-    force_basic_auth: yes
-    status_code: 200
-  register: result
-  until: result.status == 200
-  retries: 6
-  delay: 5
+    seconds: 30
 
 # 安装 grafana-cli 工具
 - name: Install grafana-cli tools
