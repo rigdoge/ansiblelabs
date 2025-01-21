@@ -121,25 +121,25 @@ ansible-playbook uninstall-percona-monitoring.yml -K
 ### 服务管理
 ```bash
 # 启动服务
-systemctl start mysql
+sudo systemctl start mysql
 
 # 停止服务
-systemctl stop mysql
+sudo systemctl stop mysql
 
 # 重启服务
-systemctl restart mysql
+sudo systemctl restart mysql
 
 # 查看状态
-systemctl status mysql
+sudo systemctl status mysql
 ```
 
 ### 监控管理
 ```bash
 # 查看 MySQL Exporter 状态
-systemctl status mysql_exporter
+sudo systemctl status mysql_exporter
 
 # 重启 MySQL Exporter
-systemctl restart mysql_exporter
+sudo systemctl restart mysql_exporter
 
 # 查看监控指标
 curl localhost:9104/metrics

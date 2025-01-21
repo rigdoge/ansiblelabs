@@ -1,4 +1,30 @@
 ---
+# 检查系统信息
+- name: Get OS information
+  debug:
+    msg: 
+      - "Distribution: {{ ansible_distribution }}"
+      - "Version: {{ ansible_distribution_version }}"
+      - "Architecture: {{ ansible_architecture }}"
+
+# 设置变量
+- name: Set platform specific variables
+  set_fact:
+    percona_repo_url: >-
+      {% if ansible_distribution == 'Ubuntu' %}
+      https://repo.percona.com/apt/percona-release_latest_{{ ansible_distribution_release }}_all.deb
+      {% elif ansible_distribution == 'Debian' %}
+      https://repo.percona.com/apt/percona-release_latest_{{ ansible_distribution_release }}_all.deb
+      {% else %}
+      unknown
+      {% endif %}
+
+# 检查是否支持当前系统
+- name: Check if system is supported
+  fail:
+    msg: "不支持的操作系统: {{ ansible_distribution }}"
+  when: percona_repo_url == 'unknown'
+
 # 安装依赖包
 - name: Install dependencies
   apt:
@@ -11,20 +37,25 @@
     state: present
     update_cache: yes
 
-# 添加 Percona 仓库密钥
-- name: Add Percona GPG key
-  shell: |
-    curl -fsSL https://repo.percona.com/apt/percona-release.key | gpg --dearmor -o /usr/share/keyrings/percona-keyring.gpg
-  args:
-    creates: /usr/share/keyrings/percona-keyring.gpg
+# 下载并安装 Percona 仓库包
+- name: Download Percona repository package
+  get_url:
+    url: "{{ percona_repo_url }}"
+    dest: "/tmp/percona-release.deb"
+  register: repo_download
+  ignore_errors: yes
 
-# 添加 Percona 仓库
-- name: Add Percona repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/percona-keyring.gpg] https://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main"
+- name: Install Percona repository package
+  apt:
+    deb: "/tmp/percona-release.deb"
     state: present
-    filename: percona-release
-    update_cache: yes
+  when: repo_download is success
+  register: repo_install
+
+# 启用 Percona Server 8.0 仓库
+- name: Enable Percona Server 8.0 repository
+  shell: percona-release setup ps80
+  when: repo_install is success
 
 # 安装 Percona Server
 - name: Install Percona Server
@@ -77,10 +108,19 @@
     login_password: "{{ mysql_root_password }}"
   notify: restart mysql_exporter
 
+# 设置 MySQL Exporter 架构变量
+- name: Set MySQL Exporter architecture
+  set_fact:
+    mysql_exporter_arch: >-
+      {% if ansible_architecture == 'aarch64' %}arm64
+      {% elif ansible_architecture == 'x86_64' %}amd64
+      {% else %}{{ ansible_architecture }}
+      {% endif %}
+
 # 安装 MySQL Exporter
 - name: Download and install MySQL Exporter
   unarchive:
-    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ 'arm64' if ansible_architecture == 'aarch64' else ansible_architecture }}.tar.gz"
+    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ mysql_exporter_arch }}.tar.gz"
     dest: /usr/local/bin
     remote_src: yes
     extra_opts:
