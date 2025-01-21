@@ -39,14 +39,6 @@
       when: item.0.value.state == 'present'
       notify: "restart php{{ item.0.key }}-fpm"
 
-- name: Create PHP-FPM configuration directories
-  file:
-    path: "/etc/php/{{ item.key }}/fpm/pool.d"
-    state: directory
-    mode: '0755'
-  loop: "{{ php_available_versions | dict2items }}"
-  when: item.value.state == 'present'
-
 - name: Create PHP runtime directories
   file:
     path: "{{ item }}"
@@ -57,18 +49,6 @@
   loop:
     - "/run/php"
     - "/var/lib/php/sessions"
-
-- name: Set correct permissions for PHP directories
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: '0755'
-    owner: www-data
-    group: www-data
-  loop:
-    - "/run/php"
-    - "/var/lib/php/sessions"
-  when: item.value.state == 'present'
 
 - name: Create PHP-FPM pool configurations
   template:
