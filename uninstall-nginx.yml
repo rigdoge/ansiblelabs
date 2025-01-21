@@ -1,0 +1,37 @@
+---
+- name: Uninstall Nginx
+  hosts: nginx
+  become: yes
+  tasks:
+    - name: Stop and disable Nginx service
+      service:
+        name: nginx
+        state: stopped
+        enabled: no
+
+    - name: Remove Nginx package
+      apt:
+        name: nginx
+        state: absent
+        purge: yes
+        autoremove: yes
+
+    - name: Remove Nginx repository
+      apt_repository:
+        repo: "deb http://nginx.org/packages/debian/ bookworm nginx"
+        state: absent
+        filename: nginx
+
+    - name: Remove Nginx signing key
+      apt_key:
+        url: https://nginx.org/keys/nginx_signing.key
+        state: absent
+
+    - name: Remove Nginx configuration files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/nginx
+        - /var/log/nginx
+        - /var/www/html 
