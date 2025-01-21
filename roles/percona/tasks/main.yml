@@ -7,24 +7,6 @@
       - "Version: {{ ansible_distribution_version }}"
       - "Architecture: {{ ansible_architecture }}"
 
-# 设置变量
-- name: Set platform specific variables
-  set_fact:
-    percona_repo_url: >-
-      {% if ansible_distribution == 'Ubuntu' %}
-      https://repo.percona.com/apt/percona-release_latest_{{ ansible_distribution_release }}_all.deb
-      {% elif ansible_distribution == 'Debian' %}
-      https://repo.percona.com/apt/percona-release_latest_{{ ansible_distribution_release }}_all.deb
-      {% else %}
-      unknown
-      {% endif %}
-
-# 检查是否支持当前系统
-- name: Check if system is supported
-  fail:
-    msg: "不支持的操作系统: {{ ansible_distribution }}"
-  when: percona_repo_url == 'unknown'
-
 # 安装依赖包
 - name: Install dependencies
   apt:
@@ -37,25 +19,30 @@
     state: present
     update_cache: yes
 
-# 下载并安装 Percona 仓库包
-- name: Download Percona repository package
-  get_url:
-    url: "{{ percona_repo_url }}"
-    dest: "/tmp/percona-release.deb"
-  register: repo_download
-  ignore_errors: yes
-
-- name: Install Percona repository package
-  apt:
-    deb: "/tmp/percona-release.deb"
+# 添加 Percona 仓库密钥
+- name: Add Percona GPG key
+  apt_key:
+    url: https://repo.percona.com/apt/percona-release.gpg
     state: present
-  when: repo_download is success
-  register: repo_install
 
-# 启用 Percona Server 8.0 仓库
+# 添加 Percona 仓库
+- name: Add Percona repository
+  apt_repository:
+    repo: "deb https://repo.percona.com/percona/apt {{ ansible_distribution_release }} main"
+    state: present
+    filename: percona
+    update_cache: yes
+
+# 启用 Percona Server 8.0
+- name: Install percona-release package
+  apt:
+    name: percona-release
+    state: present
+    update_cache: yes
+
 - name: Enable Percona Server 8.0 repository
-  shell: percona-release setup ps80
-  when: repo_install is success
+  command: percona-release enable-only ps-80
+  register: repo_enable
 
 # 安装 Percona Server
 - name: Install Percona Server
