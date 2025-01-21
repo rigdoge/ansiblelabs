@@ -23,20 +23,47 @@
     enabled: yes
     daemon_reload: yes
 
-- name: Configure Prometheus datasource
-  grafana_datasource:
-    name: "Prometheus"
-    ds_type: "prometheus"
-    ds_url: "http://localhost:9090"
-    access: "proxy"
-    is_default: yes
+# 等待 Grafana 启动
+- name: Wait for Grafana to start
+  wait_for:
+    port: 3000
+    timeout: 30
+
+# 安装 grafana-cli 工具
+- name: Install grafana-cli tools
+  apt:
+    name: python3-requests
     state: present
 
+# 配置数据源
+- name: Configure Prometheus datasource
+  uri:
+    url: "http://localhost:3000/api/datasources"
+    method: POST
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    body_format: json
+    body:
+      name: "Prometheus"
+      type: "prometheus"
+      url: "http://localhost:9090"
+      access: "proxy"
+      isDefault: true
+    status_code: [200, 409]  # 409 表示数据源已存在
+    headers:
+      Content-Type: "application/json"
+
+# 导入仪表盘
 - name: Import Nginx dashboard
-  grafana_dashboard:
-    grafana_url: http://localhost:3000
-    grafana_user: admin
-    grafana_password: admin
-    state: present
-    overwrite: yes
-    path: templates/nginx-dashboard.json 
+  uri:
+    url: "http://localhost:3000/api/dashboards/db"
+    method: POST
+    user: admin
+    password: admin
+    force_basic_auth: yes
+    body_format: json
+    body: "{{ lookup('file', 'templates/nginx-dashboard.json') | from_json | combine({'overwrite': true}) }}"
+    status_code: 200
+    headers:
+      Content-Type: "application/json" 
