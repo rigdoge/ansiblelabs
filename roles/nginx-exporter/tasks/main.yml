@@ -1,0 +1,52 @@
+---
+- name: Set architecture fact
+  set_fact:
+    arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
+- name: Create nginx-exporter user
+  user:
+    name: nginx-exporter
+    system: yes
+    shell: /sbin/nologin
+    home: /var/lib/nginx-exporter
+    create_home: yes
+
+- name: Download nginx-exporter
+  get_url:
+    url: "https://github.com/nginx/nginx-prometheus-exporter/releases/download/v0.11.0/nginx-prometheus-exporter_0.11.0_linux_{{ arch }}.tar.gz"
+    dest: /tmp/nginx-exporter.tar.gz
+    mode: '0644'
+
+- name: Extract nginx-exporter
+  unarchive:
+    src: /tmp/nginx-exporter.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: Copy nginx-exporter binary
+  copy:
+    src: /tmp/nginx-prometheus-exporter
+    dest: /usr/local/bin/nginx-exporter
+    mode: '0755'
+    remote_src: yes
+
+- name: Configure nginx stub_status
+  template:
+    src: nginx-status.conf.j2
+    dest: /etc/nginx/conf.d/status.conf
+    mode: '0644'
+  notify: reload nginx
+
+- name: Create nginx-exporter systemd service
+  template:
+    src: nginx-exporter.service.j2
+    dest: /etc/systemd/system/nginx-exporter.service
+    mode: '0644'
+  notify: restart nginx-exporter
+
+- name: Start and enable nginx-exporter
+  systemd:
+    name: nginx-exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes 
