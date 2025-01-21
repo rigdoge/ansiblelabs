@@ -6,21 +6,29 @@
       - gnupg2
       - curl
       - software-properties-common
+      - lsb-release
     state: present
     update_cache: yes
 
-# 添加 Percona 仓库
-- name: Add Percona apt key
-  apt_key:
-    url: https://repo.percona.com/apt/percona-release.key
-    state: present
+# 下载并安装 Percona 仓库包
+- name: Download Percona repository package
+  get_url:
+    url: "https://repo.percona.com/apt/percona-release_latest_{{ ansible_architecture }}.deb"
+    dest: "/tmp/percona-release.deb"
+  register: download_result
+  ignore_errors: yes
 
-- name: Add Percona repository
-  apt_repository:
-    repo: deb http://repo.percona.com/ps-80/apt {{ ansible_distribution_release }} main
+- name: Install Percona repository package
+  apt:
+    deb: "/tmp/percona-release.deb"
     state: present
-    filename: percona-release
-    update_cache: yes
+  when: download_result is success
+  register: repo_install
+
+# 启用 Percona Server 8.0 仓库
+- name: Enable Percona Server 8.0 repository
+  command: percona-release setup ps80
+  when: repo_install is success
 
 # 安装 Percona Server
 - name: Install Percona Server
@@ -31,6 +39,7 @@
       - percona-server-common
       - percona-toolkit
     state: present
+    update_cache: yes
   notify: restart mysql
 
 # 配置 MySQL
@@ -75,7 +84,7 @@
 # 安装 MySQL Exporter
 - name: Download and install MySQL Exporter
   unarchive:
-    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-amd64.tar.gz"
+    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ ansible_architecture }}.tar.gz"
     dest: /usr/local/bin
     remote_src: yes
     extra_opts:
