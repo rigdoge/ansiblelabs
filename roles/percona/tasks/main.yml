@@ -45,7 +45,7 @@
 
 # 启用 Percona Tools 仓库
 - name: Enable Percona Tools repository
-  command: percona-release enable tools
+  command: percona-release enable-only tools release
   when: repo_install is success
   register: tools_enable
 
