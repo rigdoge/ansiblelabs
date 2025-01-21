@@ -1,18 +1,4 @@
 ---
-# 添加 RabbitMQ 仓库
-- name: Add RabbitMQ signing key
-  get_url:
-    url: https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key
-    dest: /usr/share/keyrings/rabbitmq.asc
-    mode: '0644'
-
-- name: Add RabbitMQ repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.asc] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq
-    update_cache: yes
-
 # 添加 RabbitMQ Erlang 仓库
 - name: Add RabbitMQ Erlang signing key
   get_url:
@@ -27,22 +13,58 @@
     filename: rabbitmq-erlang
     update_cache: yes
 
+# 添加 RabbitMQ 仓库
+- name: Add RabbitMQ signing key
+  get_url:
+    url: https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key
+    dest: /usr/share/keyrings/rabbitmq.asc
+    mode: '0644'
+
+- name: Add RabbitMQ repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.asc] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
+    state: present
+    filename: rabbitmq
+    update_cache: yes
+
 # 获取系统架构
 - name: Get system architecture
   command: dpkg --print-architecture
   register: system_architecture
   changed_when: false
 
-# 安装依赖
-- name: Install required packages
+# 安装 Erlang 依赖
+- name: Install Erlang packages
   apt:
     name:
-      - "erlang"
+      - erlang-base
+      - erlang-asn1
+      - erlang-crypto
+      - erlang-eldap
+      - erlang-ftp
+      - erlang-inets
+      - erlang-mnesia
+      - erlang-os-mon
+      - erlang-parsetools
+      - erlang-public-key
+      - erlang-runtime-tools
+      - erlang-snmp
+      - erlang-ssl
+      - erlang-syntax-tools
+      - erlang-tftp
+      - erlang-tools
+      - erlang-xmerl
+    state: present
+    update_cache: yes
+
+# 安装其他依赖
+- name: Install other required packages
+  apt:
+    name:
       - socat
       - logrotate
       - python3-pip
     state: present
-    update_cache: yes
 
 # 下载对应架构的 RabbitMQ
 - name: Download RabbitMQ server package
