@@ -25,10 +25,18 @@
       when: ansible_os_family == "RedHat"
 
 - name: Install Nginx 1.24
-  package:
-    name: nginx-1.24.*
+  apt:
+    name: nginx
     state: present
     update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Nginx 1.24 (RHEL/CentOS)
+  yum:
+    name: nginx
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "RedHat"
 
 - name: Start and enable Nginx service
   service:
