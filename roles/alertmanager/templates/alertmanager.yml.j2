@@ -6,20 +6,33 @@ route:
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 1h
-  receiver: 'email'
+  receiver: 'telegram'
 
 receivers:
-- name: 'email'
-  email_configs:
-  - to: 'your-email@example.com'
-    from: 'alertmanager@example.com'
-    smarthost: 'smtp.example.com:587'
-    auth_username: 'your-username'
-    auth_password: 'your-password'
+- name: 'telegram'
+  telegram_configs:
+  - bot_token: '7769020692:AAHcw3raoMSWMxzhasx9gJ4SLsOL5NoAt7c'
+    chat_id: 1171267236
+    parse_mode: 'HTML'
+    message: |
+      {{ if eq .Status "firing" }}
+      🔥 <b>告警触发</b>
+      <b>告警级别:</b> {{ .CommonLabels.severity }}
+      <b>告警名称:</b> {{ .CommonLabels.alertname }}
+      <b>告警主机:</b> {{ .CommonLabels.instance }}
+      <b>告警详情:</b> {{ .CommonAnnotations.description }}
+      <b>触发时间:</b> {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+      {{ else }}
+      ✅ <b>告警恢复</b>
+      <b>告警级别:</b> {{ .CommonLabels.severity }}
+      <b>告警名称:</b> {{ .CommonLabels.alertname }}
+      <b>告警主机:</b> {{ .CommonLabels.instance }}
+      <b>恢复时间:</b> {{ .EndsAt.Format "2006-01-02 15:04:05" }}
+      {{ end }}
 
 inhibit_rules:
   - source_match:
       severity: 'critical'
     target_match:
       severity: 'warning'
-    equal: ['alertname', 'dev', 'instance'] 
+    equal: ['alertname', 'instance'] 

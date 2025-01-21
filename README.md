@@ -52,7 +52,7 @@ ansible-playbook uninstall-monitoring.yml -K
 安装完成后，可以通过以下地址访问各个组件：
 
 1. **Prometheus**
-   - 地址：`http://your-server:9090`
+   - 地址：`http://129.151.159.11:9090`
    - 用途：查询原始监控数据
    - 常用指标：
      - `nginx_up`: Nginx 运行状态
@@ -60,7 +60,7 @@ ansible-playbook uninstall-monitoring.yml -K
      - `nginx_http_requests_total`: 总请求数
 
 2. **Grafana**
-   - 地址：`http://your-server:3000`
+   - 地址：`http://129.151.159.11:3000`
    - 默认账号：admin
    - 默认密码：admin
    - 首次登录会要求修改密码
@@ -69,11 +69,11 @@ ansible-playbook uninstall-monitoring.yml -K
      - 已导入 Nginx 监控仪表盘
 
 3. **Alertmanager**
-   - 地址：`http://your-server:9093`
+   - 地址：`http://129.151.159.11:9093`
    - 用途：管理和查看告警
 
 4. **Nginx Exporter 指标**
-   - 地址：`http://your-server:9113/metrics`
+   - 地址：`http://129.151.159.11:9113/metrics`
    - 用途：查看原始 Nginx 指标
 
 ## 目录结构

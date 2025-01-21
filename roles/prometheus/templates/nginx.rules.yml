@@ -1,0 +1,18 @@
+groups:
+- name: nginx_alerts
+  rules:
+  - alert: NginxDown
+    expr: nginx_up == 0
+    labels:
+      severity: critical
+    annotations:
+      summary: "Nginx 已停止运行"
+      description: "服务器 {{ $labels.instance }} 的 Nginx 已停止运行"
+
+  - alert: NginxRecovered
+    expr: nginx_up == 1 and changes(nginx_up[1m]) > 0
+    labels:
+      severity: info
+    annotations:
+      summary: "Nginx 已恢复运行"
+      description: "服务器 {{ $labels.instance }} 的 Nginx 已恢复运行" 
