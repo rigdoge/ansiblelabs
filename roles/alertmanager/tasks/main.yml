@@ -1,4 +1,8 @@
 ---
+- name: Set architecture fact
+  set_fact:
+    arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+
 - name: Create Alertmanager user
   user:
     name: alertmanager
@@ -9,7 +13,7 @@
 
 - name: Download Alertmanager
   get_url:
-    url: https://github.com/prometheus/alertmanager/releases/download/v0.26.0/alertmanager-0.26.0.linux-arm64.tar.gz
+    url: "https://github.com/prometheus/alertmanager/releases/download/v0.26.0/alertmanager-0.26.0.linux-{{ arch }}.tar.gz"
     dest: /tmp/alertmanager.tar.gz
     mode: '0644'
 
@@ -32,7 +36,7 @@
 
 - name: Copy Alertmanager binary
   copy:
-    src: "/tmp/alertmanager-0.26.0.linux-arm64/alertmanager"
+    src: "/tmp/alertmanager-0.26.0.linux-{{ arch }}/alertmanager"
     dest: /usr/local/bin/
     mode: '0755'
     remote_src: yes
