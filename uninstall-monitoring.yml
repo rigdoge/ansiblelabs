@@ -2,82 +2,102 @@
 - hosts: all
   become: yes
   tasks:
-    # 停止服务（如果存在）
-    - name: Stop monitoring services
-      service:
+    # 停止并禁用所有监控服务
+    - name: Stop and disable monitoring services
+      systemd:
         name: "{{ item }}"
         state: stopped
         enabled: no
-      loop:
-        - grafana-server
+      with_items:
         - prometheus
         - alertmanager
+        - grafana-server
         - node_exporter
-        - nginx-exporter
+        - mysql_exporter
         - php-fpm-exporter
+        - nginx-exporter
       ignore_errors: yes
 
-    # 删除 Grafana
-    - name: Remove Grafana
+    # 删除监控软件包
+    - name: Remove monitoring packages
       apt:
-        name: grafana
+        name: 
+          - prometheus
+          - prometheus-alertmanager
+          - grafana
         state: absent
         purge: yes
+        autoremove: yes
       ignore_errors: yes
 
-    # 删除 Grafana 仓库
-    - name: Remove Grafana repository
-      apt_repository:
-        repo: "deb https://apt.grafana.com stable main"
-        state: absent
-        filename: grafana
-      ignore_errors: yes
-
-    # 删除 Grafana GPG key
-    - name: Remove Grafana GPG key
-      apt_key:
-        url: https://apt.grafana.com/gpg.key
-        state: absent
-      ignore_errors: yes
-
-    # 删除监控组件目录
-    - name: Remove monitoring directories
+    # 清理配置目录
+    - name: Remove configuration directories
       file:
         path: "{{ item }}"
         state: absent
-      loop:
+      with_items:
         - /etc/prometheus
-        - /var/lib/prometheus
         - /etc/alertmanager
-        - /var/lib/grafana
         - /etc/grafana
-        - /var/log/grafana
-        - /usr/local/bin/prometheus
-        - /usr/local/bin/alertmanager
+        - /var/lib/prometheus
+        - /var/lib/grafana
+        - /var/lib/alertmanager
         - /usr/local/bin/node_exporter
-        - /usr/local/bin/nginx-exporter
+        - /usr/local/bin/mysql_exporter
         - /usr/local/bin/php-fpm-exporter
-      ignore_errors: yes
+        - /usr/local/bin/nginx-exporter
 
-    # 删除 systemd 服务文件
+    # 清理日志目录
+    - name: Remove log directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /var/log/prometheus
+        - /var/log/alertmanager
+        - /var/log/grafana
+
+    # 清理 systemd 服务文件
     - name: Remove systemd service files
       file:
         path: "/etc/systemd/system/{{ item }}"
         state: absent
-      loop:
+      with_items:
         - prometheus.service
         - alertmanager.service
+        - grafana-server.service
         - node_exporter.service
-        - nginx-exporter.service
+        - mysql_exporter.service
         - php-fpm-exporter.service
-      ignore_errors: yes
+        - nginx-exporter.service
 
     # 重新加载 systemd
     - name: Reload systemd
       systemd:
         daemon_reload: yes
 
-    # 更新 apt 缓存
-    - name: Update apt cache
+    # 清理用户和组
+    - name: Remove monitoring users and groups
+      user:
+        name: "{{ item }}"
+        state: absent
+        remove: yes
+      with_items:
+        - prometheus
+        - grafana
+        - node_exporter
+        - mysql_exporter
+        - php-fpm-exporter
+        - nginx-exporter
+      ignore_errors: yes
+
+    # 清理 APT 源
+    - name: Remove Grafana APT repository
+      file:
+        path: /etc/apt/sources.list.d/grafana.list
+        state: absent
+
+    # 更新 APT 缓存
+    - name: Update APT cache
       apt:
         update_cache: yes 
