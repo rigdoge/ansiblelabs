@@ -108,7 +108,8 @@
 # 安装 Percona Server Common
 - name: Install Percona Server Common
   apt:
-    name: percona-server-common
+    name: 
+      - percona-server-common-8.0
     state: present
     force: yes
   register: common_install
@@ -132,7 +133,8 @@
 # 安装 Percona Server Client
 - name: Install Percona Server Client
   apt:
-    name: percona-server-client
+    name: 
+      - percona-server-client-8.0
     state: present
     force: yes
   when: common_install is success
@@ -142,7 +144,7 @@
 - name: Install Percona Server
   apt:
     name:
-      - percona-server-server
+      - percona-server-server-8.0
       - percona-toolkit
       - percona-xtrabackup
     state: present
