@@ -161,23 +161,46 @@
 - name: Set MySQL Exporter architecture
   set_fact:
     mysql_exporter_arch: >-
-      {% if ansible_architecture == 'aarch64' %}arm64
-      {% elif ansible_architecture == 'x86_64' %}amd64
-      {% else %}{{ ansible_architecture }}
-      {% endif %}
+      {%- if ansible_architecture == 'aarch64' -%}arm64
+      {%- elif ansible_architecture == 'x86_64' -%}amd64
+      {%- else -%}{{ ansible_architecture }}
+      {%- endif -%}
+
+# 创建临时目录
+- name: Create temporary directory
+  tempfile:
+    state: directory
+    suffix: mysql_exporter
+  register: temp_dir
+
+# 下载 MySQL Exporter
+- name: Download MySQL Exporter
+  get_url:
+    url: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ mysql_exporter_arch }}.tar.gz"
+    dest: "{{ temp_dir.path }}/mysqld_exporter.tar.gz"
+    mode: '0644'
+
+# 解压 MySQL Exporter
+- name: Extract MySQL Exporter
+  unarchive:
+    src: "{{ temp_dir.path }}/mysqld_exporter.tar.gz"
+    dest: "{{ temp_dir.path }}"
+    remote_src: yes
 
 # 安装 MySQL Exporter
-- name: Download and install MySQL Exporter
-  unarchive:
-    src: "https://github.com/prometheus/mysqld_exporter/releases/download/v{{ mysql_exporter_version }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ mysql_exporter_arch }}.tar.gz"
-    dest: /usr/local/bin
-    remote_src: yes
-    extra_opts:
-      - --strip-components=1
-      - --wildcards
-      - '*/mysqld_exporter'
+- name: Install MySQL Exporter
+  copy:
+    src: "{{ temp_dir.path }}/mysqld_exporter-{{ mysql_exporter_version }}.linux-{{ mysql_exporter_arch }}/mysqld_exporter"
+    dest: /usr/local/bin/mysqld_exporter
     mode: '0755'
+    remote_src: yes
   notify: restart mysql_exporter
+
+# 清理临时目录
+- name: Remove temporary directory
+  file:
+    path: "{{ temp_dir.path }}"
+    state: absent
 
 # 创建 MySQL Exporter 服务
 - name: Create MySQL Exporter systemd service
