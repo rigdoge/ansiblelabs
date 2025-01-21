@@ -120,6 +120,7 @@
     name:
       - percona-server-server
       - percona-toolkit
+      - percona-xtrabackup-80
     state: present
     force: yes
   when: client_install is success
@@ -223,4 +224,46 @@
     name: mysql_exporter
     state: started
     enabled: yes
-    daemon_reload: yes 
+    daemon_reload: yes
+
+# 创建备份目录
+- name: Create backup directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: '0750'
+  with_items:
+    - /var/backup/mysql/full
+    - /var/backup/mysql/incremental
+
+# 创建备份脚本
+- name: Create backup scripts
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: '0755'
+  with_items:
+    - { src: 'mysql-backup-full.sh.j2', dest: '/usr/local/bin/mysql-backup-full' }
+    - { src: 'mysql-backup-incremental.sh.j2', dest: '/usr/local/bin/mysql-backup-incremental' }
+
+# 创建定时任务
+- name: Setup backup cron jobs
+  cron:
+    name: "{{ item.name }}"
+    job: "{{ item.job }}"
+    hour: "{{ item.hour }}"
+    minute: "{{ item.minute }}"
+    state: present
+  with_items:
+    - name: "MySQL full backup"
+      job: "/usr/local/bin/mysql-backup-full"
+      hour: "1"
+      minute: "0"
+    - name: "MySQL incremental backup"
+      job: "/usr/local/bin/mysql-backup-incremental"
+      hour: "*/6"
+      minute: "0" 

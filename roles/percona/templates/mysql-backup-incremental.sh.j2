@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# 设置变量
+FULL_BACKUP_DIR="/var/backup/mysql/full"
+INCR_BACKUP_DIR="/var/backup/mysql/incremental"
+DATE=$(date +%Y%m%d_%H%M%S)
+INCR_PATH="$INCR_BACKUP_DIR/backup_$DATE"
+
+# 获取最新的全量备份
+LATEST_FULL=$(find $FULL_BACKUP_DIR -maxdepth 1 -type d -name "backup_*" | sort -r | head -n1)
+
+if [ -z "$LATEST_FULL" ]; then
+    echo "No full backup found. Please run full backup first."
+    exit 1
+fi
+
+# 获取最新的增量备份
+LATEST_INCR=$(find $INCR_BACKUP_DIR -maxdepth 1 -type d -name "backup_*" | sort -r | head -n1)
+
+# 创建增量备份
+if [ -z "$LATEST_INCR" ]; then
+    # 如果没有增量备份，基于全量备份创建
+    xtrabackup --backup --target-dir=$INCR_PATH \
+        --incremental-basedir=$LATEST_FULL \
+        --user=root --password={{ mysql_root_password }}
+else
+    # 基于最新的增量备份创建
+    xtrabackup --backup --target-dir=$INCR_PATH \
+        --incremental-basedir=$LATEST_INCR \
+        --user=root --password={{ mysql_root_password }}
+fi
+
+# 设置权限
+chown -R mysql:mysql $INCR_PATH
+
+# 清理旧的增量备份（保留2天）
+find $INCR_BACKUP_DIR -maxdepth 1 -type d -mtime +2 -exec rm -rf {} \; 
