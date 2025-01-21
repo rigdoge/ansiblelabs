@@ -142,7 +142,7 @@
     - name: percona-server-server.deb
       url: "https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-server_8.0.40-31-1.bookworm_arm64.deb"
     - name: percona-xtrabackup.deb
-      url: "https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.40-31/binary/debian/bookworm/x86_64/percona-xtrabackup-80_8.0.40-31-1.bookworm_arm64.deb"
+      url: "https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-30/binary/debian/bookworm/arm64/percona-xtrabackup-80_8.0.35-30-1.bookworm_arm64.deb"
   register: download_debs
 
 # 安装 Percona Server Common
