@@ -1,0 +1,71 @@
+---
+# 可用的 PHP 版本列表
+php_available_versions:
+  "8.3":
+    status_port: 9003
+    priority: 30  # 优先级，数字越小优先级越高
+    state: absent # present 或 absent
+  "8.2":
+    status_port: 9002
+    priority: 20
+    state: present
+  "8.1":
+    status_port: 9001
+    priority: 10
+    state: present
+
+# 默认使用的 PHP 版本
+php_default_version: "8.2"
+
+# 基础 PHP-FPM 配置模板
+php_fpm_base_config:
+  pm: dynamic
+  pm_max_children: 5
+  pm_start_servers: 2
+  pm_min_spare_servers: 1
+  pm_max_spare_servers: 3
+  status_path: /status
+
+# PHP 扩展列表
+php_extensions:
+  - bcmath
+  - ctype
+  - curl
+  - dom
+  - fileinfo
+  - gd
+  - intl
+  - mbstring
+  - mysql
+  - simplexml
+  - soap
+  - sockets
+  - sodium
+  - xml
+  - xmlwriter
+  - xsl
+  - zip
+
+# PHP 配置选项
+php_config:
+  memory_limit: "256M"
+  max_execution_time: 60
+  max_input_time: 60
+  post_max_size: "64M"
+  upload_max_filesize: "64M"
+  date_timezone: "UTC"
+  error_reporting: "E_ALL & ~E_DEPRECATED & ~E_STRICT"
+  display_errors: "Off"
+  display_startup_errors: "Off"
+  log_errors: "On"
+  error_log: "/var/log/php/error.log"
+
+# OPcache 配置
+php_opcache_config:
+  enable: 1
+  enable_cli: 1
+  memory_consumption: 128
+  interned_strings_buffer: 8
+  max_accelerated_files: 4000
+  revalidate_freq: 60
+  fast_shutdown: 1 

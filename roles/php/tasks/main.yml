@@ -1,0 +1,69 @@
+---
+- name: Add Ondrej PHP PPA repository
+  apt_repository:
+    repo: ppa:ondrej/php
+    state: present
+    update_cache: yes
+
+- name: Install PHP versions and extensions
+  block:
+    - name: Install PHP-FPM packages
+      apt:
+        name: "php{{ item.key }}-fpm"
+        state: "{{ item.value.state }}"
+      loop: "{{ php_available_versions | dict2items }}"
+      register: php_install_result
+
+    - name: Install PHP extensions for each version
+      apt:
+        name: "php{{ item.0.key }}-{{ item.1 }}"
+        state: "{{ item.0.value.state }}"
+      loop: "{{ php_available_versions | dict2items | product(php_extensions) | list }}"
+      when: item.0.value.state == 'present'
+
+- name: Create PHP-FPM configuration directories
+  file:
+    path: "/etc/php/{{ item.key }}/fpm/pool.d"
+    state: directory
+    mode: '0755'
+  loop: "{{ php_available_versions | dict2items }}"
+  when: item.value.state == 'present'
+
+- name: Create PHP-FPM pool configurations
+  template:
+    src: www.conf.j2
+    dest: "/etc/php/{{ item.key }}/fpm/pool.d/www.conf"
+    mode: '0644'
+  loop: "{{ php_available_versions | dict2items }}"
+  when: item.value.state == 'present'
+  notify: "restart php{{ item.key }}-fpm"
+
+- name: Create PHP configurations
+  template:
+    src: php.ini.j2
+    dest: "/etc/php/{{ item.key }}/fpm/php.ini"
+    mode: '0644'
+  loop: "{{ php_available_versions | dict2items }}"
+  when: item.value.state == 'present'
+  notify: "restart php{{ item.key }}-fpm"
+
+- name: Create PHP log directory
+  file:
+    path: /var/log/php
+    state: directory
+    mode: '0755'
+    owner: www-data
+    group: www-data
+
+- name: Ensure PHP-FPM services are enabled and started
+  service:
+    name: "php{{ item.key }}-fpm"
+    state: "{{ item.value.state == 'present' | ternary('started', 'stopped') }}"
+    enabled: "{{ item.value.state == 'present' }}"
+  loop: "{{ php_available_versions | dict2items }}"
+
+- name: Create PHP version switcher script
+  template:
+    src: php-switch.sh.j2
+    dest: /usr/local/bin/php-switch
+    mode: '0755' 

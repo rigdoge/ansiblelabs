@@ -1,0 +1,61 @@
+groups:
+- name: php_fpm_alerts
+  rules:
+  # PHP-FPM 进程停止告警
+  - alert: PHPFPMDown
+    expr: php_fpm_up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "PHP-FPM 已停止运行"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 进程已停止运行"
+
+  # PHP-FPM 进程恢复告警
+  - alert: PHPFPMRecovered
+    expr: php_fpm_up == 1 and changes(php_fpm_up[1m]) > 0
+    labels:
+      severity: info
+    annotations:
+      summary: "PHP-FPM 已恢复运行"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 进程已恢复运行"
+
+  # PHP-FPM 进程数过高告警
+  - alert: PHPFPMTooManyProcesses
+    expr: php_fpm_processes_total > 50
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 进程数过多"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 进程数达到 {{ $value }}，超过阈值 50"
+
+  # PHP-FPM 慢请求告警
+  - alert: PHPFPMSlowRequests
+    expr: rate(php_fpm_slow_requests_total[5m]) > 1
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 慢请求过多"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 在过去5分钟内平均每分钟产生超过1个慢请求"
+
+  # PHP-FPM 内存使用告警
+  - alert: PHPFPMHighMemoryUsage
+    expr: php_fpm_memory_usage / 1024 / 1024 > 1024  # 超过1GB
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 内存使用过高"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 内存使用达到 {{ $value | humanize }}MB"
+
+  # PHP-FPM 请求队列告警
+  - alert: PHPFPMQueueFull
+    expr: php_fpm_listen_queue_length > php_fpm_listen_queue_size_max * 0.8
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "PHP-FPM 请求队列接近满载"
+      description: "服务器 {{ $labels.instance }} 的 PHP-FPM {{ $labels.pool }} 请求队列使用率超过80%" 

@@ -1,0 +1,42 @@
+---
+- name: Create php-fpm-exporter group
+  group:
+    name: php-fpm-exporter
+    state: present
+
+- name: Create php-fpm-exporter user
+  user:
+    name: php-fpm-exporter
+    group: php-fpm-exporter
+    shell: /usr/sbin/nologin
+    system: yes
+    create_home: no
+
+- name: Download php-fpm-exporter
+  get_url:
+    url: https://github.com/hipages/php-fpm_exporter/releases/download/v2.2.0/php-fpm_exporter_2.2.0_linux_amd64
+    dest: /usr/local/bin/php-fpm-exporter
+    mode: '0755'
+    owner: php-fpm-exporter
+    group: php-fpm-exporter
+
+- name: Create php-fpm-exporter systemd service
+  template:
+    src: php-fpm-exporter.service.j2
+    dest: /etc/systemd/system/php-fpm-exporter.service
+    mode: '0644'
+  notify: restart php-fpm-exporter
+
+- name: Create php-fpm-exporter configuration
+  template:
+    src: php-fpm-exporter.yaml.j2
+    dest: /etc/php-fpm-exporter/config.yaml
+    mode: '0644'
+  notify: restart php-fpm-exporter
+
+- name: Ensure php-fpm-exporter service is enabled and started
+  systemd:
+    name: php-fpm-exporter
+    state: started
+    enabled: yes
+    daemon_reload: yes 

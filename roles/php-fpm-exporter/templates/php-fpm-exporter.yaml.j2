@@ -1,0 +1,38 @@
+pools:
+{% for version, config in php_available_versions.items() %}
+{% if config.state == 'present' %}
+  - name: php{{ version }}
+    endpoint: unix:///run/php/php{{ version }}-fpm.sock
+    path: /status
+{% endif %}
+{% endfor %}
+
+global:
+  # 全局超时设置
+  scrape_timeout: 3s
+  # 最大并发请求数
+  max_requests: 10
+  # 重试次数
+  retries: 3
+
+metrics:
+  # 进程指标
+  - name: process_count
+    type: gauge
+    help: Number of PHP-FPM processes
+  # 请求指标
+  - name: requests_total
+    type: counter
+    help: Total number of requests
+  # 慢请求指标
+  - name: slow_requests_total
+    type: counter
+    help: Total number of slow requests
+  # 内存使用指标
+  - name: memory_usage
+    type: gauge
+    help: Memory usage in bytes
+  # CPU 使用指标
+  - name: cpu_usage
+    type: gauge
+    help: CPU usage percentage 

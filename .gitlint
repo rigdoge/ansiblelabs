@@ -1,0 +1,18 @@
+[general]
+# 忽略某些规则
+ignore=body-is-missing
+
+# 提交信息标题行最大长度
+title-max-length=72
+
+# 提交信息正文行最大长度
+body-max-line-length=100
+
+[title-match-regex]
+# 标题必须以以下类型开头：
+# feat|fix|docs|style|refactor|test|chore
+regex=^(feat|fix|docs|style|refactor|test|chore)(\([a-z]+\))?: .*
+
+[body-match-regex]
+# 正文每行必须以大写字母开头
+regex=^[A-Z] 

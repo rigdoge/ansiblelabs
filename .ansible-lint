@@ -1,0 +1,29 @@
+---
+# 排除检查的路径
+exclude_paths:
+  - .git/
+  - .github/
+  - .cache/
+  - tests/
+
+# 要跳过的规则
+skip_list:
+  - yaml[line-length]  # 已经在 yamllint 中配置
+  - no-handler  # 允许没有 handler 的 notify
+  - name[template]  # 允许更灵活的任务命名
+
+# 启用所有规则标签
+enable_list:
+  - fqcn-builtins  # 使用完全限定的集合名称
+  - no-log-password  # 检查密码是否被记录
+  - no-same-owner  # 检查文件权限
+  - yaml  # YAML 语法检查
+
+# 警告级别
+warn_list:
+  - git-latest  # 使用特定的 git 版本而不是 latest
+  - experimental  # 实验性功能
+
+# 使用更严格的规则
+use_default_rules: true
+strict: true 

@@ -1,0 +1,9 @@
+---
+{% for version, config in php_available_versions.items() %}
+- name: restart php{{ version }}-fpm
+  service:
+    name: php{{ version }}-fpm
+    state: restarted
+  when: config.state == 'present'
+
+{% endfor %} 
