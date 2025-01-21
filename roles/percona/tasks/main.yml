@@ -126,7 +126,7 @@
     name:
       - percona-server-server
       - percona-toolkit
-      - percona-xtrabackup-80
+      - percona-xtrabackup
     state: present
     force: yes
   when: client_install is success
