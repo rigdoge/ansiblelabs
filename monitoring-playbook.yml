@@ -1,0 +1,7 @@
+---
+- name: Install Monitoring Stack
+  hosts: nginx
+  become: yes
+  roles:
+    - prometheus
+    - alertmanager 
