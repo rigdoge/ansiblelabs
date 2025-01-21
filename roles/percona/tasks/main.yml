@@ -49,16 +49,73 @@
     update_cache: yes
   when: repo_enable is success
 
+# 创建必要的目录
+- name: Create MySQL directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: mysql
+    group: mysql
+    mode: '0755'
+  with_items:
+    - /etc/mysql
+    - /etc/mysql/conf.d
+    - /var/lib/mysql
+    - /var/log/mysql
+    - /var/run/mysqld
+
+# 创建 MySQL 用户和组
+- name: Create MySQL user and group
+  user:
+    name: mysql
+    system: yes
+    group: mysql
+    home: /var/lib/mysql
+    shell: /bin/false
+    state: present
+
+# 安装 Percona Server Common
+- name: Install Percona Server Common
+  apt:
+    name: percona-server-common
+    state: present
+    force: yes
+  register: common_install
+
+# 创建默认配置文件
+- name: Create default MySQL configuration
+  copy:
+    content: |
+      [mysqld]
+      user = mysql
+      datadir = /var/lib/mysql
+      socket = /var/run/mysqld/mysqld.sock
+      pid-file = /var/run/mysqld/mysqld.pid
+      log_error = /var/log/mysql/error.log
+    dest: /etc/mysql/my.cnf.fallback
+    owner: root
+    group: root
+    mode: '0644'
+  when: common_install is success
+
+# 安装 Percona Server Client
+- name: Install Percona Server Client
+  apt:
+    name: percona-server-client
+    state: present
+    force: yes
+  when: common_install is success
+  register: client_install
+
 # 安装 Percona Server
 - name: Install Percona Server
   apt:
     name:
       - percona-server-server
-      - percona-server-client
-      - percona-server-common
       - percona-toolkit
     state: present
-    update_cache: yes
+    force: yes
+  when: client_install is success
   notify: restart mysql
 
 # 配置 MySQL
