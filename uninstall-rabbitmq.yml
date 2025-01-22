@@ -14,6 +14,28 @@
         - rabbitmq-exporter
       ignore_errors: yes
 
+    # 删除仓库配置文件
+    - name: Remove RabbitMQ repository files
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/apt/sources.list.d/rabbitmq.list
+        - /etc/apt/sources.list.d/rabbitmq-erlang.list
+        - /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
+        - /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
+        - /usr/share/keyrings/com.rabbitmq.team.gpg
+        - /etc/apt/keyrings/rabbitmq.asc
+        - /etc/apt/keyrings/rabbitmq.gpg
+        - /etc/apt/keyrings/rabbitmq-erlang.asc
+        - /etc/apt/keyrings/rabbitmq-erlang.gpg
+
+    # 更新包缓存
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      ignore_errors: yes
+
     # 卸载 RabbitMQ 相关包
     - name: Remove RabbitMQ packages
       apt:
@@ -23,6 +45,7 @@
         state: absent
         purge: yes
         autoremove: yes
+      ignore_errors: yes
 
     # 删除配置文件和数据目录
     - name: Remove RabbitMQ directories and files
@@ -36,11 +59,7 @@
         - /usr/lib/rabbitmq
         - /usr/share/rabbitmq
         - /var/run/rabbitmq
-        - /etc/apt/sources.list.d/rabbitmq.list
-        - /etc/apt/sources.list.d/rabbitmq-erlang.list
-        - /usr/share/keyrings/com.rabbitmq.team.gpg
-        - /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
-        - /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
+        - /etc/systemd/system/rabbitmq-exporter.service
 
     # 删除 RabbitMQ 用户和组
     - name: Remove RabbitMQ user and group
@@ -54,7 +73,11 @@
     - name: Clean systemd
       command: systemctl daemon-reload
 
-    # 更新包缓存
-    - name: Update package cache
-      apt:
-        update_cache: yes 
+    # 清理日志
+    - name: Clean RabbitMQ logs
+      command: journalctl --vacuum-time=1s --unit=rabbitmq-server
+      ignore_errors: yes
+
+    - name: Clean RabbitMQ Exporter logs
+      command: journalctl --vacuum-time=1s --unit=rabbitmq-exporter
+      ignore_errors: yes 
