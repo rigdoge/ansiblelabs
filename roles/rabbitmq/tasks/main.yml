@@ -34,6 +34,21 @@
     filename: rabbitmq-erlang
     update_cache: yes
 
+# 添加 Erlang Solutions 仓库
+- name: Add Erlang Solutions repository key
+  shell: |
+    curl -1sLf "https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc" | gpg --dearmor > /etc/apt/keyrings/erlang-solutions.gpg
+    chmod 644 /etc/apt/keyrings/erlang-solutions.gpg
+  args:
+    creates: /etc/apt/keyrings/erlang-solutions.gpg
+
+- name: Add Erlang Solutions repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/erlang-solutions.gpg arch=arm64] https://packages.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib"
+    state: present
+    filename: erlang-solutions
+    update_cache: yes
+
 # 移除旧版本的 Erlang
 - name: Remove old Erlang packages
   apt:
@@ -50,6 +65,15 @@
   apt:
     update_cache: yes
     cache_valid_time: 3600
+
+# 安装 Erlang
+- name: Install Erlang
+  apt:
+    name: esl-erlang
+    state: present
+    update_cache: yes
+    allow_downgrades: yes
+    allow_change_held_packages: yes
 
 # 安装 Erlang 包
 - name: Install Erlang packages
