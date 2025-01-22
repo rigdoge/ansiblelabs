@@ -1,0 +1,41 @@
+---
+- name: Enable Nginx auto-restart
+  hosts: all
+  become: yes
+  tasks:
+    - name: Remove custom systemd override for nginx
+      file:
+        path: /etc/systemd/system/nginx.service.d/override.conf
+        state: absent
+
+    - name: Remove override directory if empty
+      file:
+        path: /etc/systemd/system/nginx.service.d
+        state: absent
+      ignore_errors: yes
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Enable and start nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Ensure nginx-exporter is running
+      systemd:
+        name: nginx-exporter
+        state: started
+        enabled: yes
+
+    - name: Wait for nginx to be fully operational
+      wait_for:
+        port: 80
+        timeout: 30
+
+    - name: Wait for nginx-exporter to be ready
+      wait_for:
+        port: 9113
+        timeout: 30 
