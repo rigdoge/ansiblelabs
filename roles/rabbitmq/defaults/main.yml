@@ -1,18 +1,16 @@
 ---
 # RabbitMQ 版本
-rabbitmq_version: "3.13.0"
+rabbitmq_version: "3.13.7"
 
 # RabbitMQ 管理员账户
 rabbitmq_admin_user: admin
-rabbitmq_admin_password: StrongPassword123
+rabbitmq_admin_password: "{{ vault_rabbitmq_admin_password }}"
 
 # RabbitMQ 配置
 rabbitmq_tcp_port: 5672
 rabbitmq_management_port: 15672
 rabbitmq_prometheus_port: 15692
-
-# 内存和磁盘限制
-rabbitmq_memory_high_watermark: 0.4
+rabbitmq_vm_memory_high_watermark: 0.8
 rabbitmq_disk_free_limit: "2GB"
 
 # SSL/TLS 配置
@@ -24,6 +22,7 @@ rabbitmq_ssl_ca_file: "/etc/rabbitmq/ssl/ca.pem"
 
 # 监控配置
 rabbitmq_enable_monitoring: true
+rabbitmq_exporter_version: "1.0.0-RC18"
 rabbitmq_exporter_port: 9419
 rabbitmq_exporter_user: monitoring
 rabbitmq_exporter_password: monitoring123
