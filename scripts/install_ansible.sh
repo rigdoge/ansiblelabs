@@ -65,7 +65,7 @@ pip install --upgrade pip
 
 # 安装 Ansible 和依赖（虚拟环境内，不需要 sudo）
 echo -e "${YELLOW}安装 Ansible 和依赖 (虚拟环境内)...${NC}"
-pip install -r requirements.txt
+pip install -r scripts/requirements.txt
 
 # 验证安装
 echo -e "${YELLOW}验证安装...${NC}"
