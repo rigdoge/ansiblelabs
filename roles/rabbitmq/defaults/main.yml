@@ -1,7 +1,7 @@
 ---
 # RabbitMQ 版本
 rabbitmq_version: "3.13.7"
-erlang_version: "1:26.2.5.6-1"
+erlang_version: "1:26.2.*"
 
 # RabbitMQ 管理员账户
 rabbitmq_admin_user: admin
@@ -35,4 +35,17 @@ rabbitmq_log_dir: /var/log/rabbitmq
 # 集群配置（预留）
 rabbitmq_cluster_enabled: false
 rabbitmq_erlang_cookie: CHANGEME
-rabbitmq_cluster_nodes: [] 
+rabbitmq_cluster_nodes: []
+
+# 系统限制
+rabbitmq_ulimit_n: 65536
+rabbitmq_ulimit_s: 4096
+
+# 性能调优
+rabbitmq_tcp_listen_options:
+  backlog: 128
+  nodelay: true
+  linger:
+    on: true
+    timeout: 0
+  keepalive: true 

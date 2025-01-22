@@ -50,6 +50,7 @@
     name: erlang
     state: present
     update_cache: yes
+    default_release: "{{ ansible_distribution_release }}"
   register: erlang_install_result
 
 - name: Install RabbitMQ Server
@@ -57,6 +58,7 @@
     name: "rabbitmq-server={{ rabbitmq_version }}-1"
     state: present
     update_cache: yes
+    default_release: "{{ ansible_distribution_release }}"
   register: rabbitmq_install_result
   when: erlang_install_result is success
 
