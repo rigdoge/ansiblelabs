@@ -188,3 +188,66 @@ pre-commit --version
 - 查看项目文档
 - 提交 Issue 到 GitHub
 - 联系项目维护者 
+
+## 9. 卸载说明
+
+### 9.1 自动卸载
+我们提供了自动卸载脚本：
+```bash
+# 运行卸载脚本（不要使用 sudo）
+./uninstall_ansible.sh
+
+# 脚本会在需要时自动请求 sudo 权限
+```
+
+注意事项：
+- 不要直接使用 sudo 运行脚本
+- 脚本会在需要时自动请求权限
+- 可以选择是否删除系统级包
+- 重要文件会自动备份
+
+### 9.2 手动卸载步骤
+
+1. **删除虚拟环境**：
+   ```bash
+   # 确保先退出虚拟环境
+   deactivate
+   
+   # 删除虚拟环境目录
+   rm -rf .venv
+   ```
+
+2. **删除项目文件**（可选）：
+   ```bash
+   # 删除配置文件
+   rm -f ansible.cfg
+   rm -f inventory
+   
+   # 删除目录
+   rm -rf roles/
+   rm -rf group_vars/
+   rm -rf host_vars/
+   ```
+
+3. **删除系统级依赖**（可选，需要 sudo）：
+   ```bash
+   # 只有在确定这些包不被其他程序使用时才执行
+   sudo apt remove python3-pip python3-venv
+   sudo apt autoremove
+   ```
+
+### 9.3 注意事项
+
+1. **数据备份**：
+   - 卸载前备份重要的配置文件
+   - 备份 inventory 文件
+   - 备份自定义的 roles 和 playbooks
+
+2. **依赖检查**：
+   - 确认没有其他项目依赖这个环境
+   - 检查是否有正在运行的任务
+
+3. **清理建议**：
+   - 建议保留配置文件的备份
+   - 可以只删除虚拟环境而保留项目文件
+   - 如果要完全删除，确保没有未提交的更改 
