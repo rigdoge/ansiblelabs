@@ -21,12 +21,20 @@
   },
   "software_versions": {
     "automation": {
+      "python": "3.11+",
+      "pip": "latest",
+      "virtualenv": "latest",
       "ansible": "2.17.*",
       "ansible_core": "2.17.*",
       "ansible_lint": "latest",
       "molecule": "latest",
       "yamllint": "latest",
-      "pre_commit": "latest"
+      "pre_commit": "latest",
+      "installation": {
+        "method": "pip3",
+        "virtualenv": true,
+        "requirements_file": "requirements.txt"
+      }
     },
     "web_services": {
       "nginx": "1.24.*",

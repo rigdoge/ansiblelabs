@@ -22,12 +22,17 @@
 ## 软件版本要求
 
 ### 1. 自动化工具
+- **Python**: 3.11+
+- **pip**: latest
+- **virtualenv**: latest
 - **Ansible**: 2.17.*
+  - 安装方式：使用 pip3 在虚拟环境中安装
   - ansible-core: 2.17.*
   - ansible-lint: latest
   - molecule: latest
   - yamllint: latest
   - pre-commit: latest
+  - 依赖管理：使用 requirements.txt
 
 ### 2. Web 服务相关
 - **Nginx**: 1.24.*
@@ -149,6 +154,9 @@
 ## 开发规范
 
 ### 1. Ansible 规范
+- 使用 Python 虚拟环境
+- 通过 pip3 安装 Ansible 及相关工具
+- 使用 requirements.txt 管理依赖版本
 - 使用 roles 组织代码
 - 变量命名使用 snake_case
 - 敏感信息使用 vault 加密
