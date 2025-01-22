@@ -138,14 +138,16 @@
         'common': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/noble/x86_64/percona-server-common_8.0.40-31-1.noble_arm64.deb',
         'client': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/noble/x86_64/percona-server-client_8.0.40-31-1.noble_arm64.deb',
         'server': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/noble/x86_64/percona-server-server_8.0.40-31-1.noble_arm64.deb',
-        'xtrabackup': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/noble/x86_64/percona-xtrabackup-80_8.0.35-32-1.noble_arm64.deb'
+        'xtrabackup': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/noble/x86_64/percona-xtrabackup-80_8.0.35-32-1.noble_arm64.deb',
+        'xtrabackup_dbg': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/noble/x86_64/percona-xtrabackup-dbg-80_8.0.35-32-1.noble_arm64.deb'
       }
       {%- else -%}
       {
         'common': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-common_8.0.40-31-1.bookworm_arm64.deb',
         'client': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-client_8.0.40-31-1.bookworm_arm64.deb',
         'server': 'https://downloads.percona.com/downloads/Percona-Server-8.0/Percona-Server-8.0.40-31/binary/debian/bookworm/x86_64/percona-server-server_8.0.40-31-1.bookworm_arm64.deb',
-        'xtrabackup': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/bookworm/x86_64/percona-xtrabackup-80_8.0.35-32-1.bookworm_arm64.deb'
+        'xtrabackup': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/bookworm/x86_64/percona-xtrabackup-80_8.0.35-32-1.bookworm_arm64.deb',
+        'xtrabackup_dbg': 'https://downloads.percona.com/downloads/Percona-XtraBackup-8.0/Percona-XtraBackup-8.0.35-32/binary/debian/bookworm/x86_64/percona-xtrabackup-dbg-80_8.0.35-32-1.bookworm_arm64.deb'
       }
       {%- endif -%}
 
@@ -162,6 +164,8 @@
       url: "{{ percona_urls.server }}"
     - name: percona-xtrabackup.deb
       url: "{{ percona_urls.xtrabackup }}"
+    - name: percona-xtrabackup-dbg.deb
+      url: "{{ percona_urls.xtrabackup_dbg }}"
   register: download_debs
 
 # 安装 Percona Server Common
@@ -208,6 +212,7 @@
     - percona-server-client.deb
     - percona-server-server.deb
     - percona-xtrabackup.deb
+    - percona-xtrabackup-dbg.deb
 
 # 配置 MySQL
 - name: Create MySQL configuration file
