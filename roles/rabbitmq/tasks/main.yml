@@ -51,24 +51,34 @@
     update_cache: yes
     cache_valid_time: 3600
 
+# 检查可用的 Erlang 版本
+- name: Check available Erlang versions
+  shell: apt-cache madison erlang-base
+  register: erlang_versions
+  changed_when: false
+
+- name: Display available Erlang versions
+  debug:
+    var: erlang_versions.stdout_lines
+
 # 安装 Erlang
 - name: Install Erlang
   apt:
     name:
-      - erlang-base=1:26.0.2-1
-      - erlang-crypto=1:26.0.2-1
-      - erlang-eldap=1:26.0.2-1
-      - erlang-inets=1:26.0.2-1
-      - erlang-mnesia=1:26.0.2-1
-      - erlang-os-mon=1:26.0.2-1
-      - erlang-parsetools=1:26.0.2-1
-      - erlang-public-key=1:26.0.2-1
-      - erlang-runtime-tools=1:26.0.2-1
-      - erlang-ssl=1:26.0.2-1
-      - erlang-syntax-tools=1:26.0.2-1
-      - erlang-tools=1:26.0.2-1
-      - erlang-xmerl=1:26.0.2-1
-    state: present
+      - erlang-base
+      - erlang-crypto
+      - erlang-eldap
+      - erlang-inets
+      - erlang-mnesia
+      - erlang-os-mon
+      - erlang-parsetools
+      - erlang-public-key
+      - erlang-runtime-tools
+      - erlang-ssl
+      - erlang-syntax-tools
+      - erlang-tools
+      - erlang-xmerl
+    state: latest
     update_cache: yes
     allow_downgrades: yes
     allow_change_held_packages: yes
