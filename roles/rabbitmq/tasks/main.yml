@@ -22,14 +22,14 @@
 # 为了安装最新的 3.13.x 版本，我们需要添加官方仓库
 - name: Add RabbitMQ Team Erlang repository key
   shell: |
-    curl -1sLf "https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq-erlang.gpg
+    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq-erlang.gpg
     chmod 644 /etc/apt/keyrings/rabbitmq-erlang.gpg
   args:
     creates: /etc/apt/keyrings/rabbitmq-erlang.gpg
 
 - name: Add RabbitMQ Team Erlang repository
   apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://ppa1.novemberain.com/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
     state: present
     filename: rabbitmq-erlang
     update_cache: yes
