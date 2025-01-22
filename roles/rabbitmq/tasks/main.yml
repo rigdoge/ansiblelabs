@@ -6,53 +6,20 @@
       - curl
       - gnupg
       - apt-transport-https
+      - debian-keyring
+      - debian-archive-keyring
     state: present
 
-# 下载 Team RabbitMQ 的密钥
-- name: Download RabbitMQ signing key
-  get_url:
-    url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
-    dest: /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
-    mode: '0644'
-
-# 下载 RabbitMQ Erlang 仓库密钥
-- name: Download Erlang signing key
-  get_url:
-    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
-    dest: /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
-    mode: '0644'
-
-# 配置 RabbitMQ 仓库
-- name: Add RabbitMQ and Erlang repository
-  template:
-    src: rabbitmq.list.j2
-    dest: /etc/apt/sources.list.d/rabbitmq.list
-    mode: '0644'
+# 下载并运行 PackageCloud 安装脚本
+- name: Download and run PackageCloud installation script
+  shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | bash
+  args:
+    creates: /etc/apt/sources.list.d/rabbitmq_rabbitmq-server.list
 
 # 更新包索引
 - name: Update package indices
   apt:
     update_cache: yes
-
-# 安装 Erlang 包
-- name: Install Erlang packages
-  apt:
-    name:
-      - erlang-base
-      - erlang-asn1
-      - erlang-crypto
-      - erlang-public-key
-      - erlang-ssl
-      - erlang-mnesia
-      - erlang-runtime-tools
-      - erlang-snmp
-      - erlang-os-mon
-      - erlang-parsetools
-      - erlang-inets
-      - erlang-tools
-      - erlang-eldap
-      - erlang-xmerl
-    state: present
 
 # 安装 RabbitMQ
 - name: Install RabbitMQ
@@ -112,18 +79,6 @@
   rabbitmq_user:
     user: guest
     state: absent
-
-# 安装 RabbitMQ Exporter
-- name: Download RabbitMQ Exporter
-  get_url:
-    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
-    dest: /tmp/rabbitmq-exporter.deb
-    mode: '0644'
-
-- name: Install RabbitMQ Exporter
-  apt:
-    deb: /tmp/rabbitmq-exporter.deb
-    state: present
 
 # 配置 RabbitMQ Exporter 服务
 - name: Configure RabbitMQ Exporter service
