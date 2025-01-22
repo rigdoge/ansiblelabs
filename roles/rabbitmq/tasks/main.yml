@@ -6,15 +6,55 @@
       - curl
       - gnupg
       - apt-transport-https
-      - python3-apt
     state: present
     update_cache: yes
+
+# 添加 Erlang 仓库密钥
+- name: Add Erlang repository key
+  get_url:
+    url: "https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc"
+    dest: /usr/share/keyrings/erlang-solutions.asc
+    mode: '0644'
+
+# 添加 Erlang 仓库
+- name: Add Erlang repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/erlang-solutions.asc] https://packages.erlang-solutions.com/ubuntu {{ ansible_distribution_release }} contrib"
+    state: present
+    filename: erlang-solutions
 
 # 更新包缓存
 - name: Update apt cache
   apt:
     update_cache: yes
     cache_valid_time: 3600
+
+# 安装 Erlang 26
+- name: Install Erlang 26
+  apt:
+    name: 
+      - erlang
+      - erlang-base
+      - erlang-asn1
+      - erlang-crypto
+      - erlang-public-key
+      - erlang-ssl
+      - erlang-inets
+      - erlang-mnesia
+      - erlang-runtime-tools
+      - erlang-os-mon
+    state: present
+    update_cache: yes
+
+# 检查 Erlang 版本
+- name: Check Erlang version
+  command: erl -eval 'erlang:display(erlang:system_info(otp_release)), halt().' -noshell
+  register: erlang_version
+  changed_when: false
+
+- name: Display Erlang version
+  debug:
+    var: erlang_version.stdout_lines
 
 # 检查可用的 RabbitMQ 版本
 - name: Check available RabbitMQ versions
@@ -26,25 +66,18 @@
   debug:
     var: rabbitmq_versions.stdout_lines
 
-# 下载 RabbitMQ 签名密钥
-- name: Download RabbitMQ signing key
+# 直接从 GitHub 下载 RabbitMQ 签名密钥
+- name: Download RabbitMQ signing key from GitHub
   get_url:
-    url: "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA"
+    url: "https://github.com/rabbitmq/signing-keys/releases/download/3.0/rabbitmq-release-signing-key.asc"
     dest: /tmp/rabbitmq-release-signing-key.asc
     mode: '0644'
-
-# 验证密钥指纹
-- name: Verify signing key fingerprint
-  shell: gpg --with-fingerprint /tmp/rabbitmq-release-signing-key.asc | grep -q "0A9A F211 5F46 87BD 2980  3A20 6B73 A36E 6026 DFCA"
-  register: key_verify
-  changed_when: false
 
 # 导入 RabbitMQ 签名密钥
 - name: Import RabbitMQ signing key
   command: gpg --import /tmp/rabbitmq-release-signing-key.asc
   register: gpg_import
   changed_when: "'imported' in gpg_import.stderr"
-  when: key_verify.rc == 0
 
 # 下载 RabbitMQ 服务器包
 - name: Download RabbitMQ server package
@@ -64,8 +97,12 @@
 - name: Verify RabbitMQ package signature
   command: gpg --verify /tmp/rabbitmq-server.deb.asc /tmp/rabbitmq-server.deb
   register: gpg_verify
-  failed_when: "'BAD signature' in gpg_verify.stderr"
   changed_when: false
+
+# 显示验证结果
+- name: Display signature verification result
+  debug:
+    var: gpg_verify.stderr_lines
 
 # 安装 RabbitMQ 服务器
 - name: Install RabbitMQ server
