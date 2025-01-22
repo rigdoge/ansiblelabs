@@ -31,22 +31,40 @@
     filename: rabbitmq-erlang
     update_cache: yes
 
-# 安装 Erlang
-- name: Install Erlang
+# 安装 Erlang 包
+- name: Install Erlang packages
   apt:
-    name: erlang
-    state: present
+    name:
+      - erlang-base
+      - erlang-crypto
+      - erlang-eldap
+      - erlang-inets
+      - erlang-mnesia
+      - erlang-os-mon
+      - erlang-parsetools
+      - erlang-public-key
+      - erlang-runtime-tools
+      - erlang-ssl
+      - erlang-syntax-tools
+      - erlang-tools
+      - erlang-xmerl
+    state: latest
     update_cache: yes
+    cache_valid_time: 3600
 
-# 下载并运行 PackageCloud 安装脚本
-- name: Download and run PackageCloud installation script
-  shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | bash
+# 添加 RabbitMQ 仓库密钥
+- name: Add RabbitMQ repository key
+  shell: |
+    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq.gpg
   args:
-    creates: /etc/apt/sources.list.d/rabbitmq_rabbitmq-server.list
+    creates: /etc/apt/keyrings/rabbitmq.gpg
 
-# 更新包索引
-- name: Update package indices
-  apt:
+# 添加 RabbitMQ 仓库
+- name: Add RabbitMQ repository
+  apt_repository:
+    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
+    state: present
+    filename: rabbitmq
     update_cache: yes
 
 # 安装 RabbitMQ
