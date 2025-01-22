@@ -26,14 +26,63 @@
   debug:
     var: rabbitmq_versions.stdout_lines
 
-# 安装 Erlang 和 RabbitMQ
-- name: Install Erlang and RabbitMQ Server
+# 下载 RabbitMQ 签名密钥
+- name: Download RabbitMQ signing key
+  get_url:
+    url: "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA"
+    dest: /tmp/rabbitmq-release-signing-key.asc
+    mode: '0644'
+
+# 验证密钥指纹
+- name: Verify signing key fingerprint
+  command: gpg --with-fingerprint /tmp/rabbitmq-release-signing-key.asc
+  register: key_fingerprint
+  failed_when: "not '0A9A F211 5F46 87BD 2980  3A20 6B73 A36E 6026 DFCA' in key_fingerprint.stdout"
+
+# 导入 RabbitMQ 签名密钥
+- name: Import RabbitMQ signing key
+  command: gpg --import /tmp/rabbitmq-release-signing-key.asc
+  register: gpg_import
+  changed_when: "'imported' in gpg_import.stderr"
+
+# 下载 RabbitMQ 服务器包
+- name: Download RabbitMQ server package
+  get_url:
+    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb"
+    dest: /tmp/rabbitmq-server.deb
+    mode: '0644'
+
+# 下载 RabbitMQ 签名文件
+- name: Download RabbitMQ signature
+  get_url:
+    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v{{ rabbitmq_version }}/rabbitmq-server_{{ rabbitmq_version }}-1_all.deb.asc"
+    dest: /tmp/rabbitmq-server.deb.asc
+    mode: '0644'
+
+# 验证 RabbitMQ 包签名
+- name: Verify RabbitMQ package signature
+  command: gpg --verify /tmp/rabbitmq-server.deb.asc /tmp/rabbitmq-server.deb
+  register: gpg_verify
+  failed_when: >
+    'BAD signature' in gpg_verify.stderr or
+    not '0A9A F211 5F46 87BD 2980  3A20 6B73 A36E 6026 DFCA' in gpg_verify.stderr
+
+# 安装 RabbitMQ 服务器
+- name: Install RabbitMQ server
   apt:
-    name: 
-      - erlang
-      - rabbitmq-server
+    deb: /tmp/rabbitmq-server.deb
     state: present
-    update_cache: yes
+  when: "'Good signature' in gpg_verify.stderr"
+
+# 清理下载的文件
+- name: Clean up downloaded files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /tmp/rabbitmq-release-signing-key.asc
+    - /tmp/rabbitmq-server.deb
+    - /tmp/rabbitmq-server.deb.asc
 
 # 启用管理插件
 - name: Enable RabbitMQ management plugin
