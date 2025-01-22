@@ -1,0 +1,5 @@
+---
+# 系统配置
+ansible_become: true
+ansible_become_method: sudo
+ansible_become_pass: "{{ vault_sudo_pass }}" 
