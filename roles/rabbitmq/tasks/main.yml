@@ -10,17 +10,23 @@
       - debian-archive-keyring
     state: present
 
-# 添加 CloudSmith Erlang 仓库
-- name: Add CloudSmith Erlang repository key
-  get_url:
-    url: https://cloudsmith.io/~rabbitmq/repos/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key
-    dest: /etc/apt/keyrings/rabbitmq-erlang.gpg
-    mode: '0644'
-    force: yes
+# 创建 keyrings 目录
+- name: Create keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
 
-- name: Add CloudSmith Erlang repository
+# 添加 RabbitMQ 团队的 Erlang 仓库
+- name: Add RabbitMQ Team Erlang repository key
+  shell: |
+    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq-erlang.gpg
+  args:
+    creates: /etc/apt/keyrings/rabbitmq-erlang.gpg
+
+- name: Add RabbitMQ Team Erlang repository
   apt_repository:
-    repo: deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg] https://cloudsmith.io/~rabbitmq/repos/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main
+    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
     state: present
     filename: rabbitmq-erlang
     update_cache: yes
