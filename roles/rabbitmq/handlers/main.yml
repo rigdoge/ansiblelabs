@@ -1,5 +1,5 @@
 ---
-- name: restart rabbitmq
+- name: restart rabbitmq-server
   systemd:
     name: rabbitmq-server
     state: restarted
@@ -14,4 +14,4 @@
 - name: reload prometheus
   systemd:
     name: prometheus
-    state: reloaded 
+    state: reloaded
