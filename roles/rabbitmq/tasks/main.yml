@@ -9,19 +9,19 @@
     state: present
     update_cache: yes
 
-# 添加 Erlang 仓库密钥
-- name: Add Erlang repository key
+# 添加 Team RabbitMQ 的 Erlang 仓库密钥
+- name: Add Team RabbitMQ Erlang repository key
   get_url:
-    url: "https://packages.erlang-solutions.com/ubuntu/erlang_solutions.asc"
-    dest: /usr/share/keyrings/erlang-solutions.asc
+    url: "https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA"
+    dest: /usr/share/keyrings/com.rabbitmq.team.gpg
     mode: '0644'
 
-# 添加 Erlang 仓库
-- name: Add Erlang repository
+# 添加 Team RabbitMQ 的 Erlang 仓库
+- name: Add Team RabbitMQ Erlang repository
   apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/erlang-solutions.asc] https://packages.erlang-solutions.com/ubuntu {{ ansible_distribution_release }} contrib"
+    repo: "deb [signed-by=/usr/share/keyrings/com.rabbitmq.team.gpg] https://ppa.launchpadcontent.net/rabbitmq/rabbitmq-erlang/ubuntu {{ ansible_distribution_release }} main"
     state: present
-    filename: erlang-solutions
+    filename: rabbitmq-erlang
 
 # 更新包缓存
 - name: Update apt cache
@@ -32,17 +32,7 @@
 # 安装 Erlang 26
 - name: Install Erlang 26
   apt:
-    name: 
-      - erlang
-      - erlang-base
-      - erlang-asn1
-      - erlang-crypto
-      - erlang-public-key
-      - erlang-ssl
-      - erlang-inets
-      - erlang-mnesia
-      - erlang-runtime-tools
-      - erlang-os-mon
+    name: erlang
     state: present
     update_cache: yes
 
