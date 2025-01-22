@@ -1,10 +1,10 @@
 # RabbitMQ 配置文件
 # 参考: https://www.rabbitmq.com/configure.html
 
-# 网络配置
-listeners.tcp.default = {{ rabbitmq_port | default(5672) }}
-management.tcp.port = {{ rabbitmq_management_port | default(15672) }}
-prometheus.tcp.port = {{ rabbitmq_prometheus_port | default(15692) }}
+# 基础网络配置
+listeners.tcp.default = 5672
+management.tcp.port = 15672
+prometheus.tcp.port = 15692
 
 # SSL/TLS 配置
 {% if rabbitmq_enable_ssl | default(false) | bool %}
@@ -23,7 +23,7 @@ disk_free_limit.absolute = 50MB
 
 # 日志配置
 log.file.level = info
-log.dir = {{ rabbitmq_log_dir | default("/var/log/rabbitmq") }}
+log.dir = /var/log/rabbitmq
 
 # 集群配置
 cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
@@ -41,8 +41,8 @@ management.enable_queue_totals = true
 collect_statistics_interval = 10000
 {% endif %}
 
-# 性能优化
-tcp_listen_options.backlog = {{ rabbitmq_tcp_listen_backlog | default(128) }}
+# TCP 监听选项
+tcp_listen_options.backlog = 128
 tcp_listen_options.nodelay = true
 tcp_listen_options.linger.on = true
 tcp_listen_options.linger.timeout = 0
