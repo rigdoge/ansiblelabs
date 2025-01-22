@@ -10,6 +10,26 @@
       - debian-archive-keyring
     state: present
 
+# 添加 Erlang Solutions 仓库
+- name: Add Erlang Solutions repository key
+  apt_key:
+    url: https://packages.erlang-solutions.com/debian/erlang_solutions.asc
+    state: present
+
+- name: Add Erlang Solutions repository
+  apt_repository:
+    repo: deb https://packages.erlang-solutions.com/debian {{ ansible_distribution_release }} contrib
+    state: present
+    filename: erlang-solutions
+    update_cache: yes
+
+# 安装 Erlang
+- name: Install Erlang
+  apt:
+    name: esl-erlang
+    state: present
+    update_cache: yes
+
 # 下载并运行 PackageCloud 安装脚本
 - name: Download and run PackageCloud installation script
   shell: curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | bash
