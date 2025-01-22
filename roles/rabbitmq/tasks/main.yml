@@ -10,34 +10,6 @@
     state: present
     update_cache: yes
 
-# 添加 RabbitMQ 团队的 Erlang 仓库
-- name: Add RabbitMQ Team Erlang repository key
-  get_url:
-    url: "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key"
-    dest: /usr/share/keyrings/rabbitmq-erlang.gpg
-    mode: '0644'
-
-- name: Add RabbitMQ Team Erlang repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq-erlang.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq-erlang
-    update_cache: yes
-
-# 添加 RabbitMQ 仓库
-- name: Add RabbitMQ repository key
-  get_url:
-    url: "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key"
-    dest: /usr/share/keyrings/rabbitmq.gpg
-    mode: '0644'
-
-- name: Add RabbitMQ repository
-  apt_repository:
-    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq
-    update_cache: yes
-
 # 更新包缓存
 - name: Update apt cache
   apt:
@@ -55,31 +27,13 @@
     var: rabbitmq_versions.stdout_lines
 
 # 安装 Erlang 和 RabbitMQ
-- name: Install Erlang
+- name: Install Erlang and RabbitMQ Server
   apt:
-    name: "erlang={{ erlang_version }}"
+    name: 
+      - erlang
+      - rabbitmq-server
     state: present
     update_cache: yes
-  register: erlang_install_result
-
-- name: Install RabbitMQ Server
-  apt:
-    name: "rabbitmq-server"
-    state: present
-    update_cache: yes
-  register: rabbitmq_install_result
-  when: erlang_install_result is success
-
-- name: Display Erlang version
-  command: dpkg -l | grep erlang
-  register: erlang_version_check
-  changed_when: false
-  when: rabbitmq_install_result is success
-
-- name: Show installed Erlang version
-  debug:
-    var: erlang_version_check.stdout_lines
-  when: erlang_version_check is defined
 
 # 启用管理插件
 - name: Enable RabbitMQ plugins
