@@ -26,7 +26,7 @@ ansible-playbook playbook.yml --extra-vars "@vars.json"
 ### 2.1 创建密码文件 (password.yml)
 ```yaml
 ---
-ansible_become_pass: your_sudo_password
+ansible_become_password: your_sudo_password
 mysql_root_password: your_mysql_root_password
 ```
 
