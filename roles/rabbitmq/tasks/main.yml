@@ -8,34 +8,19 @@
       - apt-transport-https
     state: present
 
-# 创建 keyrings 目录
-- name: Create keyrings directory
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-
 # 下载 Team RabbitMQ 的密钥
 - name: Download RabbitMQ signing key
   get_url:
     url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
-    dest: /etc/apt/keyrings/rabbitmq.asc
+    dest: /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
     mode: '0644'
-
-# 导入 Team RabbitMQ 的密钥
-- name: Import RabbitMQ signing key
-  shell: gpg --dearmor < /etc/apt/keyrings/rabbitmq.asc > /etc/apt/keyrings/rabbitmq.gpg
 
 # 下载 RabbitMQ Erlang 仓库密钥
 - name: Download Erlang signing key
   get_url:
     url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
-    dest: /etc/apt/keyrings/rabbitmq-erlang.asc
+    dest: /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
     mode: '0644'
-
-# 导入 RabbitMQ Erlang 仓库密钥
-- name: Import Erlang signing key
-  shell: gpg --dearmor < /etc/apt/keyrings/rabbitmq-erlang.asc > /etc/apt/keyrings/rabbitmq-erlang.gpg
 
 # 配置 RabbitMQ 仓库
 - name: Add RabbitMQ and Erlang repository
