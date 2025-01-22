@@ -1,6 +1,6 @@
 ---
 # 安装基础依赖
-- name: Install basic dependencies
+- name: Install required packages
   apt:
     name:
       - curl
@@ -8,29 +8,37 @@
       - apt-transport-https
     state: present
 
-# 添加 Team RabbitMQ 的密钥
-- name: Add Team RabbitMQ main signing key
+# 创建 keyrings 目录
+- name: Create keyrings directory
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# 下载 Team RabbitMQ 的密钥
+- name: Download RabbitMQ signing key
   get_url:
     url: https://keys.openpgp.org/vks/v1/by-fingerprint/0A9AF2115F4687BD29803A206B73A36E6026DFCA
-    dest: /usr/share/keyrings/com.rabbitmq.team.gpg
+    dest: /etc/apt/keyrings/rabbitmq.asc
     mode: '0644'
 
-# 添加 RabbitMQ Erlang 仓库密钥
-- name: Add RabbitMQ Erlang repository key
+# 导入 Team RabbitMQ 的密钥
+- name: Import RabbitMQ signing key
+  shell: gpg --dearmor < /etc/apt/keyrings/rabbitmq.asc > /etc/apt/keyrings/rabbitmq.gpg
+
+# 下载 RabbitMQ Erlang 仓库密钥
+- name: Download Erlang signing key
   get_url:
     url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key
-    dest: /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
+    dest: /etc/apt/keyrings/rabbitmq-erlang.asc
     mode: '0644'
 
-# 添加 RabbitMQ Server 仓库密钥
-- name: Add RabbitMQ Server repository key
-  get_url:
-    url: https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-server.9F4587F226208342.key
-    dest: /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
-    mode: '0644'
+# 导入 RabbitMQ Erlang 仓库密钥
+- name: Import Erlang signing key
+  shell: gpg --dearmor < /etc/apt/keyrings/rabbitmq-erlang.asc > /etc/apt/keyrings/rabbitmq-erlang.gpg
 
 # 配置 RabbitMQ 仓库
-- name: Configure RabbitMQ repositories
+- name: Add RabbitMQ and Erlang repository
   template:
     src: rabbitmq.list.j2
     dest: /etc/apt/sources.list.d/rabbitmq.list
@@ -45,32 +53,41 @@
 - name: Install Erlang packages
   apt:
     name:
-      - erlang-base=1:26.2.5.6-1
-      - erlang-asn1=1:26.2.5.6-1
-      - erlang-crypto=1:26.2.5.6-1
-      - erlang-eldap=1:26.2.5.6-1
-      - erlang-ftp=1:26.2.5.6-1
-      - erlang-inets=1:26.2.5.6-1
-      - erlang-mnesia=1:26.2.5.6-1
-      - erlang-os-mon=1:26.2.5.6-1
-      - erlang-parsetools=1:26.2.5.6-1
-      - erlang-public-key=1:26.2.5.6-1
-      - erlang-runtime-tools=1:26.2.5.6-1
-      - erlang-snmp=1:26.2.5.6-1
-      - erlang-ssl=1:26.2.5.6-1
-      - erlang-syntax-tools=1:26.2.5.6-1
-      - erlang-tftp=1:26.2.5.6-1
-      - erlang-tools=1:26.2.5.6-1
-      - erlang-xmerl=1:26.2.5.6-1
+      - erlang-base
+      - erlang-asn1
+      - erlang-crypto
+      - erlang-public-key
+      - erlang-ssl
+      - erlang-mnesia
+      - erlang-runtime-tools
+      - erlang-snmp
+      - erlang-os-mon
+      - erlang-parsetools
+      - erlang-inets
+      - erlang-tools
+      - erlang-eldap
+      - erlang-xmerl
     state: present
 
 # 安装 RabbitMQ
-- name: Install RabbitMQ server
+- name: Install RabbitMQ
   apt:
-    name: rabbitmq-server
+    name: rabbitmq-server={{ rabbitmq_version }}-1
     state: present
-    update_cache: yes
-    fix_missing: yes
+
+# 启用管理插件
+- name: Enable RabbitMQ plugins
+  rabbitmq_plugin:
+    names: rabbitmq_management
+    state: enabled
+  notify: restart rabbitmq-server
+
+# 确保 RabbitMQ 已启动并启用
+- name: Ensure RabbitMQ is started and enabled
+  systemd:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
 
 # 配置 RabbitMQ
 - name: Create RabbitMQ configuration directory
@@ -91,13 +108,6 @@
     src: rabbitmq-env.conf.j2
     dest: /etc/rabbitmq/rabbitmq-env.conf
     mode: '0644'
-  notify: restart rabbitmq
-
-# 启用管理插件
-- name: Enable RabbitMQ management plugin
-  rabbitmq_plugin:
-    names: rabbitmq_management
-    state: enabled
   notify: restart rabbitmq
 
 # 创建管理员用户
