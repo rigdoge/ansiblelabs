@@ -8,7 +8,7 @@ rabbitmq_management_port: 15672
 
 # RabbitMQ 管理员账户
 rabbitmq_admin_user: admin
-rabbitmq_admin_password: "{{ vault_rabbitmq_admin_password }}"
+rabbitmq_admin_password: admin123  # 建议在生产环境中使用 vault 加密存储
 
 # RabbitMQ 配置
 rabbitmq_tcp_port: 5672
@@ -64,4 +64,28 @@ rabbitmq_exporter_log_level: info
 rabbitmq_memory_usage_threshold: 85
 rabbitmq_disk_usage_threshold: 85
 rabbitmq_queue_messages_threshold: 1000
-rabbitmq_unacked_messages_threshold: 1000 
+rabbitmq_unacked_messages_threshold: 1000
+
+# RabbitMQ 端口配置
+rabbitmq_port: 5672
+
+# RabbitMQ 日志配置
+rabbitmq_log_level: "info"
+rabbitmq_log_dir: "/var/log/rabbitmq"
+
+# RabbitMQ TCP 配置
+rabbitmq_tcp_backlog: 128
+rabbitmq_tcp_nodelay: "true"
+rabbitmq_tcp_linger_on: "true"
+rabbitmq_tcp_linger_timeout: 0
+rabbitmq_tcp_keepalive: "false"
+
+# RabbitMQ 集群配置
+rabbitmq_cluster_enabled: false
+
+# RabbitMQ SSL/TLS 配置
+rabbitmq_enable_ssl: false
+# rabbitmq_ssl_port: 5671
+# rabbitmq_ssl_cert_file: "/etc/rabbitmq/ssl/server.crt"
+# rabbitmq_ssl_key_file: "/etc/rabbitmq/ssl/server.key"
+# rabbitmq_ssl_ca_file: "/etc/rabbitmq/ssl/ca.crt" 
