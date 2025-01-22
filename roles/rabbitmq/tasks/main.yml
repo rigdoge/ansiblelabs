@@ -21,12 +21,13 @@
 - name: Add RabbitMQ Team Erlang repository key
   shell: |
     curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq-erlang.gpg
+    chmod 644 /etc/apt/keyrings/rabbitmq-erlang.gpg
   args:
     creates: /etc/apt/keyrings/rabbitmq-erlang.gpg
 
 - name: Add RabbitMQ Team Erlang repository
   apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
     state: present
     filename: rabbitmq-erlang
     update_cache: yes
@@ -36,6 +37,7 @@
   apt:
     name: "{{ item }}"
     state: absent
+    purge: yes
   with_items:
     - erlang-base
     - erlang-crypto
@@ -50,6 +52,12 @@
     - erlang-syntax-tools
     - erlang-tools
     - erlang-xmerl
+
+# 更新包缓存
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
 
 # 安装 Erlang 包
 - name: Install Erlang packages
@@ -70,7 +78,7 @@
       - erlang-xmerl
     state: latest
     update_cache: yes
-    cache_valid_time: 3600
+    force: yes
 
 # 添加 RabbitMQ 仓库密钥
 - name: Add RabbitMQ repository key
