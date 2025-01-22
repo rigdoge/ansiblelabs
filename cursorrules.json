@@ -1,0 +1,122 @@
+{
+  "system_requirements": {
+    "os": {
+      "primary": ["Ubuntu 24.04 LTS", "Debian 12"],
+      "recommended": "Ubuntu 24.04 LTS"
+    },
+    "architecture": ["arm64", "amd64"],
+    "hardware": {
+      "minimum": {
+        "cpu": "2 cores",
+        "memory": "4GB",
+        "disk": "50GB"
+      },
+      "recommended": {
+        "cpu": "4 cores",
+        "memory": "8GB",
+        "disk": "100GB",
+        "network": "1Gbps"
+      }
+    }
+  },
+  "software_versions": {
+    "automation": {
+      "ansible": "2.17.*",
+      "ansible_core": "2.17.*",
+      "ansible_lint": "latest",
+      "molecule": "latest",
+      "yamllint": "latest",
+      "pre_commit": "latest"
+    },
+    "web_services": {
+      "nginx": "1.24.*",
+      "php": {
+        "default": "8.3.*",
+        "supported": ["8.2.*"]
+      },
+      "composer": "2.7.*",
+      "varnish": "7.5.*"
+    },
+    "database_cache": {
+      "percona": "8.0.*",
+      "redis": "7.2.*",
+      "opensearch": "2.12.*"
+    },
+    "message_queue": {
+      "rabbitmq": {
+        "version": "3.13.7",
+        "dependencies": {
+          "erlang": "26.0+"
+        }
+      }
+    },
+    "management_tools": {
+      "phpmyadmin": "latest",
+      "webmin": "latest",
+      "fail2ban": "latest",
+      "certbot": "latest"
+    }
+  },
+  "project_structure": {
+    "roles": {
+      "nginx": "roles/nginx/",
+      "php": "roles/php/",
+      "percona": "roles/percona/",
+      "rabbitmq": "roles/rabbitmq/",
+      "prometheus": "roles/prometheus/",
+      "alertmanager": "roles/alertmanager/",
+      "grafana": "roles/grafana/"
+    }
+  },
+  "standards": {
+    "ansible": {
+      "role_structure": [
+        "defaults/main.yml",
+        "handlers/main.yml",
+        "tasks/main.yml",
+        "templates/",
+        "tests/",
+        "README.md"
+      ],
+      "naming_convention": "snake_case",
+      "security": "use_vault_for_sensitive_data"
+    },
+    "testing": {
+      "framework": "molecule",
+      "environment": "Ubuntu 24.04"
+    },
+    "monitoring": {
+      "required": true,
+      "exporters": [
+        "node_exporter",
+        "nginx_exporter",
+        "php_fpm_exporter"
+      ]
+    }
+  },
+  "deployment": {
+    "order": [
+      "base_infrastructure",
+      "monitoring_components",
+      "web_services",
+      "databases",
+      "message_queue",
+      "management_tools"
+    ]
+  },
+  "maintenance": {
+    "backup": {
+      "frequency": "regular",
+      "targets": [
+        "configuration_files",
+        "monitoring_data",
+        "database_data"
+      ]
+    },
+    "updates": {
+      "test_environment_required": true,
+      "rollback_plan_required": true,
+      "changelog_required": true
+    }
+  }
+} 
