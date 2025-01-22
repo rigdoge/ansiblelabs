@@ -1,2 +1,57 @@
+---
 # RabbitMQ 版本和基础配置
 rabbitmq_version: "3.13.7"
+erlang_version: "1:26.2.*"
+rabbitmq_port: 5672
+rabbitmq_management_port: 15672
+rabbitmq_prometheus_port: 15692
+
+# 管理员账户
+rabbitmq_admin_user: "ntca2"
+rabbitmq_admin_password: "ntca22010"  # 生产环境请使用 vault
+
+# 监控配置
+rabbitmq_enable_monitoring: true
+rabbitmq_exporter_version: "1.0.0-RC18"
+rabbitmq_exporter_port: 9419
+rabbitmq_exporter_user: monitoring
+rabbitmq_exporter_password: monitoring123
+rabbitmq_exporter_log_level: info
+
+# 资源限制
+rabbitmq_memory_high_watermark: 0.4
+rabbitmq_vm_memory_high_watermark_paging_ratio: 0.5
+rabbitmq_disk_free_limit: "2GB"
+
+# 日志配置
+rabbitmq_log_level: info
+rabbitmq_log_dir: /var/log/rabbitmq
+
+# 系统限制
+rabbitmq_ulimit_n: 65536
+rabbitmq_ulimit_s: 4096
+
+# TCP 配置
+rabbitmq_tcp_backlog: 128
+rabbitmq_tcp_nodelay: "true"
+rabbitmq_tcp_linger_on: "true"
+rabbitmq_tcp_linger_timeout: 0
+rabbitmq_tcp_keepalive: "false"
+
+# 集群配置
+rabbitmq_cluster_enabled: false
+rabbitmq_erlang_cookie: CHANGEME
+rabbitmq_cluster_nodes: []
+
+# SSL/TLS 配置
+rabbitmq_enable_ssl: false
+rabbitmq_ssl_port: 5671
+rabbitmq_ssl_cert_file: "/etc/rabbitmq/ssl/cert.pem"
+rabbitmq_ssl_key_file: "/etc/rabbitmq/ssl/key.pem"
+rabbitmq_ssl_ca_file: "/etc/rabbitmq/ssl/ca.pem"
+
+# Prometheus 告警阈值
+rabbitmq_memory_usage_threshold: 85
+rabbitmq_disk_usage_threshold: 85
+rabbitmq_queue_messages_threshold: 1000
+rabbitmq_unacked_messages_threshold: 1000 
