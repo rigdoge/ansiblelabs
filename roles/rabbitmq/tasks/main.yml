@@ -55,19 +55,19 @@
 - name: Install Erlang packages
   apt:
     name:
-      - erlang-base=1:26.0-1
-      - erlang-crypto=1:26.0-1
-      - erlang-eldap=1:26.0-1
-      - erlang-inets=1:26.0-1
-      - erlang-mnesia=1:26.0-1
-      - erlang-os-mon=1:26.0-1
-      - erlang-parsetools=1:26.0-1
-      - erlang-public-key=1:26.0-1
-      - erlang-runtime-tools=1:26.0-1
-      - erlang-ssl=1:26.0-1
-      - erlang-syntax-tools=1:26.0-1
-      - erlang-tools=1:26.0-1
-      - erlang-xmerl=1:26.0-1
+      - erlang-base=1:26.0*
+      - erlang-crypto=1:26.0*
+      - erlang-eldap=1:26.0*
+      - erlang-inets=1:26.0*
+      - erlang-mnesia=1:26.0*
+      - erlang-os-mon=1:26.0*
+      - erlang-parsetools=1:26.0*
+      - erlang-public-key=1:26.0*
+      - erlang-runtime-tools=1:26.0*
+      - erlang-ssl=1:26.0*
+      - erlang-syntax-tools=1:26.0*
+      - erlang-tools=1:26.0*
+      - erlang-xmerl=1:26.0*
     state: present
     update_cache: yes
     allow_downgrades: yes
