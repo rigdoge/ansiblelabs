@@ -76,13 +76,14 @@
 - name: Add RabbitMQ repository key
   shell: |
     curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq.gpg
+    chmod 644 /etc/apt/keyrings/rabbitmq.gpg
   args:
     creates: /etc/apt/keyrings/rabbitmq.gpg
 
 # 添加 RabbitMQ 仓库
 - name: Add RabbitMQ repository
   apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
+    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
     state: present
     filename: rabbitmq
     update_cache: yes
@@ -90,10 +91,12 @@
 # 安装 RabbitMQ
 # 如果不指定版本，将使用默认仓库的 3.10.x
 # 这里我们通过 rabbitmq_version 变量指定所需版本
-- name: Install RabbitMQ
+- name: Install RabbitMQ with specific version
   apt:
-    name: rabbitmq-server={{ rabbitmq_version }}-1
+    name: "rabbitmq-server={{ rabbitmq_version }}-1"
     state: present
+    force: yes
+    update_cache: yes
 
 # 启用管理插件
 - name: Enable RabbitMQ plugins
