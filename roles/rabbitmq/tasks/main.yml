@@ -29,8 +29,8 @@
     update_cache: yes
     cache_valid_time: 3600
 
-# 安装 Erlang 26
-- name: Install Erlang 26
+# 安装 Erlang
+- name: Install Erlang
   apt:
     name: erlang
     state: present
@@ -46,60 +46,28 @@
   debug:
     var: erlang_version.stdout_lines
 
-# 检查可用的 RabbitMQ 版本
-- name: Check available RabbitMQ versions
-  shell: apt-cache madison rabbitmq-server
-  register: rabbitmq_versions
-  changed_when: false
-
-- name: Display available RabbitMQ versions
-  debug:
-    var: rabbitmq_versions.stdout_lines
-
-# 直接从 GitHub 下载 RabbitMQ 签名密钥
-- name: Download RabbitMQ signing key from GitHub
+# 下载和安装 RabbitMQ
+- name: Download RabbitMQ signing key
   get_url:
     url: "https://github.com/rabbitmq/signing-keys/releases/download/3.0/rabbitmq-release-signing-key.asc"
     dest: /tmp/rabbitmq-release-signing-key.asc
     mode: '0644'
 
-# 导入 RabbitMQ 签名密钥
 - name: Import RabbitMQ signing key
   command: gpg --import /tmp/rabbitmq-release-signing-key.asc
   register: gpg_import
   changed_when: "'imported' in gpg_import.stderr"
 
-# 下载 RabbitMQ 服务器包
 - name: Download RabbitMQ server package
   get_url:
     url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.7/rabbitmq-server_3.13.7-1_all.deb"
     dest: /tmp/rabbitmq-server.deb
     mode: '0644'
 
-# 下载 RabbitMQ 签名文件
-- name: Download RabbitMQ signature
-  get_url:
-    url: "https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.7/rabbitmq-server_3.13.7-1_all.deb.asc"
-    dest: /tmp/rabbitmq-server.deb.asc
-    mode: '0644'
-
-# 验证 RabbitMQ 包签名
-- name: Verify RabbitMQ package signature
-  command: gpg --verify /tmp/rabbitmq-server.deb.asc /tmp/rabbitmq-server.deb
-  register: gpg_verify
-  changed_when: false
-
-# 显示验证结果
-- name: Display signature verification result
-  debug:
-    var: gpg_verify.stderr_lines
-
-# 安装 RabbitMQ 服务器
 - name: Install RabbitMQ server
   apt:
     deb: /tmp/rabbitmq-server.deb
     state: present
-  when: "'Good signature' in gpg_verify.stderr"
 
 # 清理下载的文件
 - name: Clean up downloaded files
@@ -109,66 +77,11 @@
   with_items:
     - /tmp/rabbitmq-release-signing-key.asc
     - /tmp/rabbitmq-server.deb
-    - /tmp/rabbitmq-server.deb.asc
 
 # 启用管理插件
 - name: Enable RabbitMQ management plugin
   command: rabbitmq-plugins enable rabbitmq_management
   notify: restart rabbitmq-server
-
-- name: Enable RabbitMQ prometheus plugin
-  command: rabbitmq-plugins enable rabbitmq_prometheus
-  notify: restart rabbitmq-server
-
-# 确保 RabbitMQ 已启动并启用
-- name: Ensure RabbitMQ is started and enabled
-  systemd:
-    name: rabbitmq-server
-    state: started
-    enabled: yes
-    daemon_reload: yes
-  register: rabbitmq_service_status
-
-- name: Check RabbitMQ service status
-  command: systemctl status rabbitmq-server
-  register: service_status
-  when: rabbitmq_service_status is failed
-  ignore_errors: yes
-
-- name: Display service status
-  debug:
-    var: service_status.stdout_lines
-  when: service_status is defined
-
-- name: Check RabbitMQ logs
-  shell: |
-    if [ -f /var/log/rabbitmq/rabbit@localhost.log ]; then
-      tail -n 50 /var/log/rabbitmq/rabbit@localhost.log
-    elif [ -f /var/log/rabbitmq/rabbit.log ]; then
-      tail -n 50 /var/log/rabbitmq/rabbit.log
-    else
-      echo "No RabbitMQ log file found"
-      ls -l /var/log/rabbitmq/
-    fi
-  register: rabbitmq_logs
-  when: rabbitmq_service_status is failed
-  ignore_errors: yes
-
-- name: Display RabbitMQ logs
-  debug:
-    var: rabbitmq_logs.stdout_lines
-  when: rabbitmq_logs is defined
-
-- name: Check RabbitMQ configuration
-  command: rabbitmqctl environment
-  register: rabbitmq_env
-  when: rabbitmq_service_status is failed
-  ignore_errors: yes
-
-- name: Display RabbitMQ environment
-  debug:
-    var: rabbitmq_env.stdout_lines
-  when: rabbitmq_env is defined
 
 # 配置 RabbitMQ
 - name: Create RabbitMQ configuration directory
@@ -197,10 +110,18 @@
     group: rabbitmq
   notify: restart rabbitmq-server
 
-# 等待 RabbitMQ 完全启动
+# 确保 RabbitMQ 已启动
+- name: Ensure RabbitMQ is started and enabled
+  systemd:
+    name: rabbitmq-server
+    state: started
+    enabled: yes
+    daemon_reload: yes
+
+# 等待 RabbitMQ 启动完成
 - name: Wait for RabbitMQ to be ready
   wait_for:
-    port: "{{ rabbitmq_management_port | default(15672) }}"
+    port: 5672
     delay: 10
     timeout: 300
 
@@ -211,44 +132,13 @@
     password: "{{ rabbitmq_admin_password }}"
     tags: administrator
     vhost: /
-    configure_priv: .*
-    read_priv: .*
-    write_priv: .*
+    configure_priv: ".*"
+    read_priv: ".*"
+    write_priv: ".*"
     state: present
 
 # 删除默认 guest 用户
 - name: Remove default guest user
   rabbitmq_user:
     user: guest
-    state: absent
-
-# 配置 RabbitMQ Exporter 服务
-- name: Configure RabbitMQ Exporter service
-  template:
-    src: rabbitmq-exporter.service.j2
-    dest: /etc/systemd/system/rabbitmq-exporter.service
-    mode: '0644'
-  notify: restart rabbitmq-exporter
-
-# 启动并启用服务
-- name: Start and enable RabbitMQ service
-  systemd:
-    name: rabbitmq-server
-    state: started
-    enabled: yes
-    daemon_reload: yes
-
-- name: Start and enable RabbitMQ Exporter service
-  systemd:
-    name: rabbitmq-exporter
-    state: started
-    enabled: yes
-    daemon_reload: yes
-
-# 配置 Prometheus 告警规则
-- name: Configure RabbitMQ Prometheus alert rules
-  template:
-    src: rabbitmq.rules.yml.j2
-    dest: /etc/prometheus/rabbitmq.rules.yml
-    mode: '0644'
-  notify: reload prometheus 
+    state: absent 

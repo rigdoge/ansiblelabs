@@ -1,0 +1,50 @@
+---
+- name: Install RabbitMQ monitoring
+  hosts: all
+  become: yes
+  
+  roles:
+    - rabbitmq-exporter
+    - prometheus
+
+  tasks:
+    - name: Enable RabbitMQ prometheus plugin
+      command: rabbitmq-plugins enable rabbitmq_prometheus
+      notify: restart rabbitmq-server
+
+    - name: Add RabbitMQ scrape config to Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - RABBITMQ"
+        block: |
+          - job_name: 'rabbitmq'
+            static_configs:
+              - targets: ['localhost:15692']
+      notify: reload prometheus
+
+    - name: Configure RabbitMQ Prometheus alert rules
+      template:
+        src: roles/rabbitmq/templates/rabbitmq.rules.yml.j2
+        dest: /etc/prometheus/rabbitmq.rules.yml
+        mode: '0644'
+      notify: reload prometheus
+
+    - name: Import RabbitMQ Grafana dashboard
+      grafana_dashboard:
+        grafana_url: "http://localhost:3000"
+        grafana_api_key: "{{ grafana_api_key }}"
+        state: present
+        overwrite: yes
+        dashboard_id: 10991
+        dashboard_revision: 1
+
+  handlers:
+    - name: restart rabbitmq-server
+      systemd:
+        name: rabbitmq-server
+        state: restarted
+
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded 

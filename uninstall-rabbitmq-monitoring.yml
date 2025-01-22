@@ -1,0 +1,59 @@
+---
+- name: Uninstall RabbitMQ monitoring
+  hosts: all
+  become: yes
+
+  tasks:
+    - name: Stop RabbitMQ Exporter service
+      systemd:
+        name: rabbitmq-exporter
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Remove RabbitMQ Exporter binary
+      file:
+        path: /usr/local/bin/rabbitmq_exporter
+        state: absent
+
+    - name: Remove RabbitMQ Exporter service file
+      file:
+        path: /etc/systemd/system/rabbitmq-exporter.service
+        state: absent
+
+    - name: Disable RabbitMQ prometheus plugin
+      command: rabbitmq-plugins disable rabbitmq_prometheus
+      ignore_errors: yes
+
+    - name: Remove RabbitMQ alert rules
+      file:
+        path: /etc/prometheus/rabbitmq.rules.yml
+        state: absent
+
+    - name: Check if Prometheus config exists
+      stat:
+        path: /etc/prometheus/prometheus.yml
+      register: prometheus_config
+
+    - name: Remove RabbitMQ scrape config from Prometheus
+      blockinfile:
+        path: /etc/prometheus/prometheus.yml
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - RABBITMQ"
+        state: absent
+      when: prometheus_config.stat.exists
+      notify: reload prometheus
+
+    - name: Remove RabbitMQ Grafana dashboard
+      grafana_dashboard:
+        grafana_url: "http://localhost:3000"
+        grafana_api_key: "{{ grafana_api_key }}"
+        dashboard_id: 10991
+        state: absent
+      ignore_errors: yes
+
+  handlers:
+    - name: reload prometheus
+      systemd:
+        name: prometheus
+        state: reloaded
+      ignore_errors: yes 
