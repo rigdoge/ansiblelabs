@@ -56,10 +56,22 @@
         dest: /etc/prometheus/nginx.rules.yml
       notify: restart prometheus
 
+    # 检查 Grafana 是否准备就绪
+    - name: Wait for Grafana to be ready
+      uri:
+        url: "http://localhost:3000/api/health"
+        method: GET
+        status_code: 200
+      register: grafana_health
+      retries: 12
+      delay: 5
+      until: grafana_health.status == 200
+      ignore_errors: yes
+
     # 导入 Nginx Grafana 仪表盘
     - name: Import Nginx dashboard to Grafana
       uri:
-        url: "http://localhost:3000/api/v1/dashboards/db"
+        url: "http://localhost:3000/api/dashboards/db"
         method: POST
         user: admin
         password: "{{ grafana_admin_password | default('grafana') }}"
@@ -69,9 +81,17 @@
           dashboard: "{{ lookup('file', 'roles/grafana/templates/dashboards/nginx.json.j2') | from_json }}"
           overwrite: true
           message: "Updated by Ansible"
+          folderId: 0
         status_code: 200
         headers:
           Content-Type: "application/json"
+      register: dashboard_import
+      ignore_errors: yes
+
+    - name: Debug dashboard import
+      debug:
+        var: dashboard_import
+      when: dashboard_import.failed is defined
 
   handlers:
     - name: restart prometheus
