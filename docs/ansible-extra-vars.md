@@ -24,10 +24,24 @@ ansible-playbook playbook.yml --extra-vars "@vars.json"
 ## 2. 密码文件示例
 
 ### 2.1 创建密码文件 (password.yml)
+
+方式一：使用文本编辑器
 ```yaml
 ---
-ansible_become_password: your_sudo_password
+ansible_become_password: your_sudo_password    # 注意：是 password 不是 pass
 mysql_root_password: your_mysql_root_password
+```
+
+方式二：快速创建（推荐）
+```bash
+# 创建单个密码的文件
+echo "---
+ansible_become_password: \"your_password\"" > password.yml && chmod 600 password.yml
+
+# 创建多个密码的文件
+echo "---
+ansible_become_password: \"your_sudo_password\"
+mysql_root_password: \"your_mysql_password\"" > password.yml && chmod 600 password.yml
 ```
 
 ### 2.2 使用密码文件
@@ -106,4 +120,15 @@ ansible-playbook playbook.yml --extra-vars "@password.yml" --extra-vars "variabl
    # 确保当前用户有权限读取文件
    sudo chown $USER password.yml
    chmod 600 password.yml
+   ```
+
+4. 常见错误：
+   ```bash
+   # 错误：直接在命令行输入变量名
+   ansible_become_password: your_password  # 这是错误的！
+   
+   # 正确：创建 YAML 文件并引用
+   echo "---
+   ansible_become_password: \"your_password\"" > password.yml
+   ansible-playbook playbook.yml --extra-vars "@password.yml"
    ``` 
