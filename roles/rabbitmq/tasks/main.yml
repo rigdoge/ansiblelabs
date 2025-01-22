@@ -144,7 +144,7 @@
     mode: '0644'
     owner: rabbitmq
     group: rabbitmq
-  notify: restart rabbitmq
+  notify: restart rabbitmq-server
 
 - name: Configure RabbitMQ environment
   template:
@@ -153,7 +153,7 @@
     mode: '0644'
     owner: rabbitmq
     group: rabbitmq
-  notify: restart rabbitmq
+  notify: restart rabbitmq-server
 
 # 等待 RabbitMQ 完全启动
 - name: Wait for RabbitMQ to be ready
