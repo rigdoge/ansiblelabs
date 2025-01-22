@@ -6,28 +6,40 @@
       - curl
       - gnupg
       - apt-transport-https
-      - debian-keyring
-      - debian-archive-keyring
     state: present
 
-# 创建 keyrings 目录
-- name: Create keyrings directory
-  file:
-    path: /etc/apt/keyrings
-    state: directory
-    mode: '0755'
-
 # 添加 RabbitMQ 团队的 Erlang 仓库
-# 注意：Debian 12 默认仓库的 RabbitMQ 版本是 3.10.x
-# 为了安装最新的 3.13.x 版本，我们需要添加官方仓库
-- name: Download Team RabbitMQ's Erlang package
-  get_url:
-    url: https://github.com/rabbitmq/erlang-packaging/releases/download/v26.0.2/erlang_26.0.2-1_arm64.deb
-    dest: /tmp/erlang.deb
-    mode: '0644'
+- name: Add RabbitMQ Team Erlang repository key
+  shell: |
+    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/gpg.E495BB49CC4BBE5B.key" | gpg --dearmor > /usr/share/keyrings/rabbitmq-erlang.gpg
+    chmod 644 /usr/share/keyrings/rabbitmq-erlang.gpg
+  args:
+    creates: /usr/share/keyrings/rabbitmq-erlang.gpg
 
-# 移除旧版本的 Erlang
-- name: Remove old Erlang packages
+- name: Add RabbitMQ Team Erlang repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq-erlang.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/ubuntu {{ ansible_distribution_release }} main"
+    state: present
+    filename: rabbitmq-erlang
+    update_cache: yes
+
+# 添加 RabbitMQ 仓库
+- name: Add RabbitMQ repository key
+  shell: |
+    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key" | gpg --dearmor > /usr/share/keyrings/rabbitmq.gpg
+    chmod 644 /usr/share/keyrings/rabbitmq.gpg
+  args:
+    creates: /usr/share/keyrings/rabbitmq.gpg
+
+- name: Add RabbitMQ repository
+  apt_repository:
+    repo: "deb [signed-by=/usr/share/keyrings/rabbitmq.gpg] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/ubuntu {{ ansible_distribution_release }} main"
+    state: present
+    filename: rabbitmq
+    update_cache: yes
+
+# 移除旧版本的 Erlang 和 RabbitMQ
+- name: Remove old packages
   apt:
     name: "{{ item }}"
     state: absent
@@ -35,43 +47,24 @@
     autoremove: yes
   with_items:
     - erlang*
-    - esl-erlang
+    - rabbitmq-server
 
-# 安装 Erlang
-- name: Install Erlang package
+# 更新包缓存
+- name: Update apt cache
   apt:
-    deb: /tmp/erlang.deb
-    state: present
-    force: yes
-
-# 下载 RabbitMQ
-- name: Download RabbitMQ package
-  get_url:
-    url: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.0/rabbitmq-server_3.13.0-1_all.deb
-    dest: /tmp/rabbitmq-server.deb
-    mode: '0644'
-
-# 安装 RabbitMQ
-- name: Install RabbitMQ package
-  apt:
-    deb: /tmp/rabbitmq-server.deb
-    state: present
-
-# 添加 RabbitMQ 仓库密钥
-- name: Add RabbitMQ repository key
-  shell: |
-    curl -1sLf "https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/gpg.9F4587F226208342.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq.gpg
-    chmod 644 /etc/apt/keyrings/rabbitmq.gpg
-  args:
-    creates: /etc/apt/keyrings/rabbitmq.gpg
-
-# 添加 RabbitMQ 仓库
-- name: Add RabbitMQ repository
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-server/deb/debian {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq
     update_cache: yes
+    cache_valid_time: 3600
+
+# 安装 Erlang 和 RabbitMQ
+- name: Install Erlang and RabbitMQ
+  apt:
+    name:
+      - erlang
+      - rabbitmq-server={{ rabbitmq_version }}-1
+    state: present
+    update_cache: yes
+    allow_downgrades: yes
+    allow_change_held_packages: yes
 
 # 启用管理插件
 - name: Enable RabbitMQ plugins
