@@ -17,19 +17,36 @@
 - hosts: all
   become: yes
   roles:
-    - nginx-exporter  # 安装 Nginx Exporter
+    - nginx-exporter
+
+  pre_tasks:
+    - name: Ensure yq is installed
+      apt:
+        name: yq
+        state: present
+      when: ansible_os_family == "Debian"
 
   tasks:
-    # 添加 Nginx 监控配置到 Prometheus
+    # 使用 yq 检查配置
+    - name: Check if Nginx scrape config exists
+      shell: |
+        yq eval '.scrape_configs[] | select(.job_name == "nginx")' /etc/prometheus/prometheus.yml
+      register: nginx_config_exists
+      changed_when: false
+      failed_when: false
+
+    # 只有当没有找到配置时才添加
     - name: Add Nginx scrape config to Prometheus
       blockinfile:
         path: /etc/prometheus/prometheus.yml
         marker: "# {mark} NGINX SCRAPE CONFIG"
+        insertbefore: "^scrape_configs:"
         block: |
           - job_name: 'nginx'
             static_configs:
               - targets: ['localhost:9113']
             metrics_path: /metrics
+      when: nginx_config_exists.stdout == ""
       notify: restart prometheus
 
     # 添加 Nginx 告警规则
@@ -42,7 +59,7 @@
     # 导入 Nginx Grafana 仪表盘
     - name: Import Nginx dashboard to Grafana
       uri:
-        url: "http://localhost:3000/api/dashboards/db"
+        url: "http://localhost:3000/api/v1/dashboards/db"
         method: POST
         user: admin
         password: "{{ grafana_admin_password | default('grafana') }}"
@@ -61,4 +78,8 @@
       systemd:
         name: prometheus
         state: restarted
-        daemon_reload: yes 
+        daemon_reload: yes
+
+    - name: validate prometheus config
+      command: promtool check config /etc/prometheus/prometheus.yml
+      listen: restart prometheus 
