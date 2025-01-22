@@ -28,11 +28,12 @@
     creates: /etc/apt/keyrings/rabbitmq-erlang.gpg
 
 - name: Add RabbitMQ Team Erlang repository
-  apt_repository:
-    repo: "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main"
-    state: present
-    filename: rabbitmq-erlang
-    update_cache: yes
+  shell: |
+    echo "deb [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main" > /etc/apt/sources.list.d/rabbitmq-erlang.list
+    echo "deb-src [signed-by=/etc/apt/keyrings/rabbitmq-erlang.gpg arch=arm64] https://dl.cloudsmith.io/public/rabbitmq/rabbitmq-erlang/deb/debian {{ ansible_distribution_release }} main" >> /etc/apt/sources.list.d/rabbitmq-erlang.list
+    apt-get update
+  args:
+    creates: /etc/apt/sources.list.d/rabbitmq-erlang.list
 
 # 移除旧版本的 Erlang
 - name: Remove old Erlang packages
