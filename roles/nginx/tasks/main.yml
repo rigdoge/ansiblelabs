@@ -1,17 +1,17 @@
 ---
 # 预检查任务
-- name: Check if Nginx is already installed
-  command: dpkg -l nginx
-  register: nginx_check
-  ignore_errors: yes
+- name: Check if Nginx service exists
+  stat:
+    path: /usr/sbin/nginx
+  register: nginx_binary
   changed_when: false
 
-- name: Stop Nginx if running
+- name: Check Nginx service status
   systemd:
     name: nginx
     state: stopped
-  when: nginx_check.rc == 0
   ignore_errors: yes
+  when: nginx_binary.stat.exists
 
 - name: Install prerequisites
   apt:
