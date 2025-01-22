@@ -70,14 +70,17 @@
     mode: '0644'
   notify: restart prometheus
 
-- name: Copy Nginx alert rules
-  template:
-    src: nginx.rules.yml
-    dest: /etc/prometheus/nginx.rules.yml
+- name: Create empty rules files
+  copy:
+    content: ""
+    dest: "/etc/prometheus/{{ item }}"
     owner: prometheus
     group: prometheus
     mode: '0644'
-  notify: restart prometheus
+    force: no
+  with_items:
+    - nginx.rules.yml
+    - php-fpm.rules.yml
 
 - name: Create Prometheus systemd service
   template:
@@ -85,6 +88,18 @@
     dest: /etc/systemd/system/prometheus.service
     mode: '0644'
   notify: restart prometheus
+
+- name: Ensure correct ownership and permissions
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+    recurse: yes
+  with_items:
+    - /etc/prometheus
+    - /var/lib/prometheus
 
 - name: Start and enable Prometheus
   systemd:
