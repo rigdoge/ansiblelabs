@@ -20,28 +20,11 @@
 # 添加 RabbitMQ 团队的 Erlang 仓库
 # 注意：Debian 12 默认仓库的 RabbitMQ 版本是 3.10.x
 # 为了安装最新的 3.13.x 版本，我们需要添加官方仓库
-- name: Download RabbitMQ install script
+- name: Download Team RabbitMQ's Erlang package
   get_url:
-    url: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.0/rabbitmq-server_3.13.0-1_all.deb
-    dest: /tmp/rabbitmq-server.deb
+    url: https://github.com/rabbitmq/erlang-debian-package/releases/download/v26.0.2/erlang_26.0.2-1_arm64.deb
+    dest: /tmp/erlang.deb
     mode: '0644'
-
-- name: Download Erlang install script
-  get_url:
-    url: https://packages.erlang-solutions.com/erlang-solutions_2.0_all.deb
-    dest: /tmp/erlang-solutions.deb
-    mode: '0644'
-
-- name: Install Erlang Solutions repository
-  apt:
-    deb: /tmp/erlang-solutions.deb
-    state: present
-
-# 更新包缓存
-- name: Update apt cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
 
 # 移除旧版本的 Erlang
 - name: Remove old Erlang packages
@@ -55,15 +38,18 @@
     - esl-erlang
 
 # 安装 Erlang
-- name: Install Erlang
+- name: Install Erlang package
   apt:
-    name:
-      - erlang
-    state: latest
-    update_cache: yes
-    allow_downgrades: yes
-    allow_change_held_packages: yes
+    deb: /tmp/erlang.deb
+    state: present
     force: yes
+
+# 下载 RabbitMQ
+- name: Download RabbitMQ package
+  get_url:
+    url: https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.13.0/rabbitmq-server_3.13.0-1_all.deb
+    dest: /tmp/rabbitmq-server.deb
+    mode: '0644'
 
 # 安装 RabbitMQ
 - name: Install RabbitMQ package
