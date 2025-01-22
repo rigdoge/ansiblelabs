@@ -46,6 +46,13 @@
         - /usr/local/bin/mysql_exporter
         - /usr/local/bin/php-fpm-exporter
         - /usr/local/bin/nginx-exporter
+        - /usr/local/bin/prometheus
+        - /usr/local/bin/promtool
+        - /usr/local/bin/alertmanager
+        - /usr/share/prometheus
+        - /usr/share/alertmanager
+        - /var/run/prometheus
+        - /var/run/alertmanager
 
     # 清理日志目录
     - name: Remove log directories
@@ -71,6 +78,19 @@
         - php-fpm-exporter.service
         - nginx-exporter.service
 
+    # 重置失败的服务状态
+    - name: Reset failed services
+      command: systemctl reset-failed {{ item }}
+      with_items:
+        - prometheus
+        - alertmanager
+        - grafana-server
+        - node_exporter
+        - mysql_exporter
+        - php-fpm-exporter
+        - nginx-exporter
+      ignore_errors: yes
+
     # 重新加载 systemd
     - name: Reload systemd
       systemd:
@@ -91,13 +111,53 @@
         - nginx-exporter
       ignore_errors: yes
 
-    # 清理 APT 源
-    - name: Remove Grafana APT repository
+    # 清理临时文件
+    - name: Remove temporary files
       file:
-        path: /etc/apt/sources.list.d/grafana.list
+        path: "{{ item }}"
         state: absent
+      with_items:
+        - /tmp/prometheus.tar.gz
+        - /tmp/alertmanager.tar.gz
+        - /tmp/node_exporter.tar.gz
+        - /tmp/mysql_exporter.tar.gz
+        - /tmp/php-fpm-exporter.tar.gz
+        - /tmp/nginx-exporter.tar.gz
+
+    # 清理 APT 源
+    - name: Remove monitoring APT repositories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /etc/apt/sources.list.d/grafana.list
+        - /etc/apt/sources.list.d/prometheus.list
+        - /etc/apt/sources.list.d/alertmanager.list
 
     # 更新 APT 缓存
     - name: Update APT cache
       apt:
-        update_cache: yes 
+        update_cache: yes
+
+    # 清理 systemd 运行时目录
+    - name: Clean systemd runtime directories
+      file:
+        path: "{{ item }}"
+        state: absent
+      with_items:
+        - /run/prometheus
+        - /run/alertmanager
+        - /run/grafana
+
+    # 清理 systemd 日志
+    - name: Clean systemd logs
+      command: journalctl --vacuum-time=1s --unit={{ item }}
+      with_items:
+        - prometheus
+        - alertmanager
+        - grafana-server
+        - node_exporter
+        - mysql_exporter
+        - php-fpm-exporter
+        - nginx-exporter
+      ignore_errors: yes 
