@@ -55,23 +55,24 @@
 - name: Install Erlang
   apt:
     name:
-      - erlang-base
-      - erlang-crypto
-      - erlang-eldap
-      - erlang-inets
-      - erlang-mnesia
-      - erlang-os-mon
-      - erlang-parsetools
-      - erlang-public-key
-      - erlang-runtime-tools
-      - erlang-ssl
-      - erlang-syntax-tools
-      - erlang-tools
-      - erlang-xmerl
+      - erlang-base=1:26.0.2-1
+      - erlang-crypto=1:26.0.2-1
+      - erlang-eldap=1:26.0.2-1
+      - erlang-inets=1:26.0.2-1
+      - erlang-mnesia=1:26.0.2-1
+      - erlang-os-mon=1:26.0.2-1
+      - erlang-parsetools=1:26.0.2-1
+      - erlang-public-key=1:26.0.2-1
+      - erlang-runtime-tools=1:26.0.2-1
+      - erlang-ssl=1:26.0.2-1
+      - erlang-syntax-tools=1:26.0.2-1
+      - erlang-tools=1:26.0.2-1
+      - erlang-xmerl=1:26.0.2-1
     state: present
     update_cache: yes
     allow_downgrades: yes
     allow_change_held_packages: yes
+    force: yes
 
 # 添加 RabbitMQ 仓库密钥
 - name: Add RabbitMQ repository key
@@ -99,6 +100,7 @@
     update_cache: yes
     allow_downgrades: yes
     allow_change_held_packages: yes
+    force: yes
 
 # 启用管理插件
 - name: Enable RabbitMQ plugins
