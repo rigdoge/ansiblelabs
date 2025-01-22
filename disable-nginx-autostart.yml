@@ -1,0 +1,40 @@
+---
+- name: Disable Nginx auto-restart
+  hosts: all
+  become: yes
+  tasks:
+    - name: Stop and disable nginx-exporter
+      systemd:
+        name: nginx-exporter
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Stop and disable nginx
+      systemd:
+        name: nginx
+        state: stopped
+        enabled: no
+      ignore_errors: yes
+
+    - name: Create custom systemd override for nginx
+      file:
+        path: /etc/systemd/system/nginx.service.d
+        state: directory
+        mode: '0755'
+
+    - name: Configure nginx to not auto-restart
+      copy:
+        content: |
+          [Service]
+          Restart=no
+        dest: /etc/systemd/system/nginx.service.d/override.conf
+        mode: '0644'
+
+    - name: Reload systemd daemon
+      systemd:
+        daemon_reload: yes
+
+    - name: Stop all nginx processes
+      shell: pkill nginx
+      ignore_errors: yes 
