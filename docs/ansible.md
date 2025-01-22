@@ -29,13 +29,13 @@ git clone https://github.com/rigdoge/ansiblelabs.git
 cd ansiblelabs
 
 # 设置脚本执行权限
-chmod +x install_ansible.sh
+chmod +x scripts/install_ansible.sh
 ```
 
 ### 2.2 运行安装脚本
 ```bash
 # 运行安装脚本（不要使用 sudo）
-./install_ansible.sh
+./scripts/install_ansible.sh
 
 # 脚本会在需要时自动请求 sudo 权限
 ```
@@ -200,7 +200,7 @@ pre-commit --version
 我们提供了自动卸载脚本：
 ```bash
 # 运行卸载脚本（不要使用 sudo）
-./uninstall_ansible.sh
+./scripts/uninstall_ansible.sh
 
 # 脚本会在需要时自动请求 sudo 权限
 ```
