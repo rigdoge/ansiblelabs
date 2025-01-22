@@ -3,13 +3,15 @@
 rabbitmq_version: "3.13.7"
 erlang_version: "1:26.2.*"
 
+# RabbitMQ 管理端口
+rabbitmq_management_port: 15672
+
 # RabbitMQ 管理员账户
 rabbitmq_admin_user: admin
 rabbitmq_admin_password: "{{ vault_rabbitmq_admin_password }}"
 
 # RabbitMQ 配置
 rabbitmq_tcp_port: 5672
-rabbitmq_management_port: 15672
 rabbitmq_prometheus_port: 15692
 rabbitmq_vm_memory_high_watermark: 0.8
 rabbitmq_disk_free_limit: "2GB"
@@ -37,15 +39,29 @@ rabbitmq_cluster_enabled: false
 rabbitmq_erlang_cookie: CHANGEME
 rabbitmq_cluster_nodes: []
 
-# 系统限制
-rabbitmq_ulimit_n: 65536
-rabbitmq_ulimit_s: 4096
+# RabbitMQ 内存和磁盘限制
+rabbitmq_memory_high_watermark: 0.4
+rabbitmq_vm_memory_high_watermark_paging_ratio: 0.5
+rabbitmq_disk_free_limit: "1GB"
 
-# 性能调优
+# RabbitMQ TCP 监听选项
 rabbitmq_tcp_listen_options:
   backlog: 128
   nodelay: true
   linger:
     on: true
     timeout: 0
-  keepalive: true 
+  keepalive: true
+
+# RabbitMQ 系统限制
+rabbitmq_ulimit_n: 65536
+rabbitmq_ulimit_s: 4096
+
+# RabbitMQ Exporter 配置
+rabbitmq_exporter_log_level: info
+
+# Prometheus 告警规则
+rabbitmq_memory_usage_threshold: 85
+rabbitmq_disk_usage_threshold: 85
+rabbitmq_queue_messages_threshold: 1000
+rabbitmq_unacked_messages_threshold: 1000 
