@@ -44,15 +44,15 @@
         - /var/lib/rabbitmq
         - /var/log/rabbitmq
 
-    - name: Remove RabbitMQ repositories
+    - name: Remove RabbitMQ repositories and keys
       file:
         path: "{{ item }}"
         state: absent
       with_items:
         - /etc/apt/sources.list.d/rabbitmq.list
         - /etc/apt/sources.list.d/rabbitmq-erlang.list
-        - /usr/share/keyrings/rabbitmq.gpg
-        - /usr/share/keyrings/rabbitmq-erlang.gpg
+        - /usr/share/keyrings/rabbitmq-archive-keyring.gpg
+        - /usr/share/keyrings/rabbitmq-erlang-archive-keyring.gpg
 
     - name: Update apt cache
       apt:
