@@ -22,8 +22,8 @@
 ## 软件版本要求
 
 ### 1. 自动化工具
-- **Ansible**: 2.15.*
-  - ansible-core: 2.15.*
+- **Ansible**: 2.17.*
+  - ansible-core: 2.17.*
   - ansible-lint: latest
   - molecule: latest
   - yamllint: latest
@@ -57,7 +57,7 @@
 ### 1. 自动化工具
 - **Ansible**
   - 配置管理和自动化部署工具
-  - 版本要求：2.15.*
+  - 版本要求：2.17.*
   - 配置文件：
     - ansible.cfg：Ansible 主配置
     - inventory：主机清单
