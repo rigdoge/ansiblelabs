@@ -1,5 +1,30 @@
 # Cursor Rules for AnsibleLabs Project
 
+## 软件版本要求
+
+### 1. Web 服务相关
+- **Nginx**: 1.24.*
+- **PHP**:
+  - PHP 8.3.* (默认版本)
+  - PHP 8.2.*
+- **Composer**: 2.7.*
+- **Varnish**: 7.5.*
+
+### 2. 数据库和缓存
+- **Percona**: 8.0.*
+- **Redis**: 7.2.*
+- **OpenSearch**: 2.12.*
+
+### 3. 消息队列
+- **RabbitMQ**: 3.13.7
+  - 依赖 Erlang 26.0+
+
+### 4. 管理工具
+- **phpMyAdmin**: latest
+- **Webmin**: latest
+- **fail2ban**: latest
+- **certbot**: latest
+
 ## 项目架构
 
 ### 1. Web 服务层
@@ -7,23 +32,40 @@
   - 作为 Web 服务器
   - 配置位于 `roles/nginx/`
   - 监控通过 nginx-exporter 实现
+  - 版本要求：1.24.*
 
 - **PHP-FPM**
   - PHP 应用运行环境
   - 配置位于 `roles/php/`
   - 监控通过 php-fpm-exporter 实现
+  - 多版本支持：
+    - PHP 8.3.* (默认)
+    - PHP 8.2.*
+
+- **Varnish**
+  - HTTP 缓存服务器
+  - 版本要求：7.5.*
 
 ### 2. 数据库层
 - **Percona**
   - MySQL 的企业级分支
   - 配置位于 `roles/percona/`
   - 包含监控配置
+  - 版本要求：8.0.*
+
+- **Redis**
+  - 内存数据库/缓存
+  - 版本要求：7.2.*
+
+- **OpenSearch**
+  - 搜索引擎
+  - 版本要求：2.12.*
 
 ### 3. 消息队列
 - **RabbitMQ**
   - 消息中间件
   - 配置位于 `roles/rabbitmq/`
-  - 版本：3.13.x
+  - 版本：3.13.7
   - 依赖 Erlang 26.0+
 
 ### 4. 监控系统
@@ -43,6 +85,23 @@
   - Node Exporter：系统监控
   - Nginx Exporter：Nginx 监控
   - PHP-FPM Exporter：PHP-FPM 监控
+
+### 5. 管理工具
+- **phpMyAdmin**
+  - 数据库管理界面
+  - 使用最新稳定版
+
+- **Webmin**
+  - 系统管理界面
+  - 使用最新稳定版
+
+- **fail2ban**
+  - 安全防护工具
+  - 使用最新稳定版
+
+- **certbot**
+  - SSL 证书管理
+  - 使用最新稳定版
 
 ## 开发规范
 
