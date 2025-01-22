@@ -1,2 +1,1 @@
----
-ansible_sudo_pass: "{{ vault_sudo_pass }}" 
+vault_sudo_pass: your_sudo_password
