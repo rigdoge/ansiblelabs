@@ -1,9 +1,19 @@
 # 系统限制
-RABBITMQ_ULIMIT_N={{ rabbitmq_ulimit_n }}
-RABBITMQ_ULIMIT_S={{ rabbitmq_ulimit_s }}
+RABBITMQ_ULIMIT_N={{ rabbitmq_ulimit_n | default(65536) }}
+RABBITMQ_ULIMIT_S={{ rabbitmq_ulimit_s | default(4096) }}
 
 # 日志目录
-RABBITMQ_LOG_BASE={{ rabbitmq_log_dir }}
+RABBITMQ_LOG_BASE={{ rabbitmq_log_dir | default("/var/log/rabbitmq") }}
+
+# 节点名称
+RABBITMQ_NODENAME=rabbit@{{ ansible_hostname }}
+
+# 配置文件位置
+RABBITMQ_CONFIG_FILE=/etc/rabbitmq/rabbitmq
+RABBITMQ_ADVANCED_CONFIG_FILE=/etc/rabbitmq/advanced.config
+
+# 环境变量
+RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+P 262144 +t 5000000 +stbt db +zdbbl 32768"
 
 # SSL/TLS 配置
 {% if rabbitmq_enable_ssl %}
