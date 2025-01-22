@@ -18,6 +18,8 @@
     mode: '0755'
 
 # 添加 RabbitMQ 团队的 Erlang 仓库
+# 注意：Debian 12 默认仓库的 RabbitMQ 版本是 3.10.x
+# 为了安装最新的 3.13.x 版本，我们需要添加官方仓库
 - name: Add RabbitMQ Team Erlang repository key
   shell: |
     curl -1sLf "https://github.com/rabbitmq/signing-keys/releases/download/3.0/cloudsmith.rabbitmq-erlang.E495BB49CC4BBE5B.key" | gpg --dearmor > /etc/apt/keyrings/rabbitmq-erlang.gpg
@@ -86,6 +88,8 @@
     update_cache: yes
 
 # 安装 RabbitMQ
+# 如果不指定版本，将使用默认仓库的 3.10.x
+# 这里我们通过 rabbitmq_version 变量指定所需版本
 - name: Install RabbitMQ
   apt:
     name: rabbitmq-server={{ rabbitmq_version }}-1
