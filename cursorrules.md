@@ -1,5 +1,24 @@
 # Cursor Rules for AnsibleLabs Project
 
+## 系统要求
+
+### 1. 操作系统支持
+- **主要支持**：
+  - Ubuntu 24.04 LTS (推荐)
+  - Debian 12 (Bookworm)
+- **CPU 架构**：
+  - arm64 (Apple Silicon, AWS Graviton 等)
+  - amd64 (x86_64)
+- **最低配置要求**：
+  - CPU: 2 核
+  - 内存: 4GB
+  - 磁盘: 50GB
+- **推荐配置**：
+  - CPU: 4 核或以上
+  - 内存: 8GB 或以上
+  - 磁盘: 100GB 或以上
+  - 网络: 千兆网络
+
 ## 软件版本要求
 
 ### 1. 自动化工具
