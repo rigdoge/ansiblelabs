@@ -35,18 +35,20 @@
       changed_when: false
       failed_when: false
 
-    # 只有当没有找到配置时才添加
-    - name: Add Nginx scrape config to Prometheus
-      blockinfile:
-        path: /etc/prometheus/prometheus.yml
-        marker: "# {mark} NGINX SCRAPE CONFIG"
-        insertbefore: "^scrape_configs:"
-        block: |
-          - job_name: 'nginx'
-            static_configs:
-              - targets: ['localhost:9113']
-            metrics_path: /metrics
+    # 备份原始配置
+    - name: Backup Prometheus config
+      copy:
+        src: /etc/prometheus/prometheus.yml
+        dest: /etc/prometheus/prometheus.yml.bak
+        remote_src: yes
       when: nginx_config_exists.stdout == ""
+
+    # 使用 template 模块添加 Nginx 配置
+    - name: Add Nginx scrape config to Prometheus
+      template:
+        src: roles/prometheus/templates/prometheus.yml.j2
+        dest: /etc/prometheus/prometheus.yml
+        validate: promtool check config %s
       notify: restart prometheus
 
     # 添加 Nginx 告警规则
