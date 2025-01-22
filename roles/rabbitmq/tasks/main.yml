@@ -36,12 +36,12 @@
     update_cache: yes
 
 # 启用管理插件
-- name: Enable RabbitMQ plugins
-  rabbitmq_plugin:
-    names: 
-      - rabbitmq_management
-      - rabbitmq_prometheus  # 添加 Prometheus 插件
-    state: enabled
+- name: Enable RabbitMQ management plugin
+  command: rabbitmq-plugins enable rabbitmq_management
+  notify: restart rabbitmq-server
+
+- name: Enable RabbitMQ prometheus plugin
+  command: rabbitmq-plugins enable rabbitmq_prometheus
   notify: restart rabbitmq-server
 
 # 确保 RabbitMQ 已启动并启用
