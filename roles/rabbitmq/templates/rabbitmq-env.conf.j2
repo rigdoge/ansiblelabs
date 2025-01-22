@@ -1,9 +1,9 @@
 # 系统限制
-RABBITMQ_ULIMIT_N={{ rabbitmq_ulimit_n | default(65536) }}
-RABBITMQ_ULIMIT_S={{ rabbitmq_ulimit_s | default(4096) }}
+RABBITMQ_ULIMIT_N={{ rabbitmq_ulimit_n }}
+RABBITMQ_ULIMIT_S={{ rabbitmq_ulimit_s }}
 
 # 日志目录
-RABBITMQ_LOG_BASE={{ rabbitmq_log_dir | default("/var/log/rabbitmq") }}
+RABBITMQ_LOG_BASE=/var/log/rabbitmq
 
 # 节点名称
 RABBITMQ_NODENAME=rabbit@{{ ansible_hostname }}
