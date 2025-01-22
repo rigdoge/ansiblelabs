@@ -47,6 +47,19 @@
     autoremove: yes
   with_items:
     - erlang*
+    - erlang-base
+    - erlang-crypto
+    - erlang-eldap
+    - erlang-inets
+    - erlang-mnesia
+    - erlang-os-mon
+    - erlang-parsetools
+    - erlang-public-key
+    - erlang-runtime-tools
+    - erlang-ssl
+    - erlang-syntax-tools
+    - erlang-tools
+    - erlang-xmerl
     - rabbitmq-server
 
 # 更新包缓存
@@ -56,22 +69,43 @@
     cache_valid_time: 3600
 
 # 安装 Erlang 和 RabbitMQ
-- name: Install Erlang and RabbitMQ
+- name: Install Erlang components
   apt:
     name:
-      - "erlang={{ erlang_version }}"
-      - "rabbitmq-server={{ rabbitmq_version }}-1"
+      - "erlang-base={{ erlang_version }}"
+      - "erlang-crypto={{ erlang_version }}"
+      - "erlang-eldap={{ erlang_version }}"
+      - "erlang-inets={{ erlang_version }}"
+      - "erlang-mnesia={{ erlang_version }}"
+      - "erlang-os-mon={{ erlang_version }}"
+      - "erlang-parsetools={{ erlang_version }}"
+      - "erlang-public-key={{ erlang_version }}"
+      - "erlang-runtime-tools={{ erlang_version }}"
+      - "erlang-ssl={{ erlang_version }}"
+      - "erlang-syntax-tools={{ erlang_version }}"
+      - "erlang-tools={{ erlang_version }}"
+      - "erlang-xmerl={{ erlang_version }}"
     state: present
     update_cache: yes
     allow_downgrades: yes
     allow_change_held_packages: yes
-  register: install_result
+  register: erlang_install_result
+
+- name: Install RabbitMQ Server
+  apt:
+    name: "rabbitmq-server={{ rabbitmq_version }}-1"
+    state: present
+    update_cache: yes
+    allow_downgrades: yes
+    allow_change_held_packages: yes
+  register: rabbitmq_install_result
+  when: erlang_install_result is success
 
 - name: Display Erlang version
   command: dpkg -l | grep erlang
   register: erlang_version_check
   changed_when: false
-  when: install_result is success
+  when: rabbitmq_install_result is success
 
 - name: Show installed Erlang version
   debug:
