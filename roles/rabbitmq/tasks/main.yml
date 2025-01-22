@@ -200,7 +200,7 @@
 # 等待 RabbitMQ 完全启动
 - name: Wait for RabbitMQ to be ready
   wait_for:
-    port: "{{ rabbitmq_management_port }}"
+    port: "{{ rabbitmq_management_port | default(15672) }}"
     delay: 10
     timeout: 300
 
