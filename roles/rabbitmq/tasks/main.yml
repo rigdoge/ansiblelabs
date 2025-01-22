@@ -22,7 +22,7 @@
 # 为了安装最新的 3.13.x 版本，我们需要添加官方仓库
 - name: Download Team RabbitMQ's Erlang package
   get_url:
-    url: https://github.com/rabbitmq/erlang-debian-package/releases/download/v26.0.2/erlang_26.0.2-1_arm64.deb
+    url: https://github.com/rabbitmq/erlang-packaging/releases/download/v26.0.2/erlang_26.0.2-1_arm64.deb
     dest: /tmp/erlang.deb
     mode: '0644'
 
