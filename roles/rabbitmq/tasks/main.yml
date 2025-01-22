@@ -129,21 +129,40 @@
     daemon_reload: yes
   register: rabbitmq_service_status
 
-- name: Check RabbitMQ service logs
-  command: journalctl -u rabbitmq-server.service --no-pager -n 50
+- name: Check RabbitMQ service status
+  command: systemctl status rabbitmq-server
+  register: service_status
+  when: rabbitmq_service_status is failed
+  ignore_errors: yes
+
+- name: Display service status
+  debug:
+    var: service_status.stdout_lines
+  when: service_status is defined
+
+- name: Check RabbitMQ logs
+  shell: |
+    if [ -f /var/log/rabbitmq/rabbit@localhost.log ]; then
+      tail -n 50 /var/log/rabbitmq/rabbit@localhost.log
+    elif [ -f /var/log/rabbitmq/rabbit.log ]; then
+      tail -n 50 /var/log/rabbitmq/rabbit.log
+    else
+      echo "No RabbitMQ log file found"
+      ls -l /var/log/rabbitmq/
+    fi
   register: rabbitmq_logs
   when: rabbitmq_service_status is failed
   ignore_errors: yes
 
-- name: Display RabbitMQ service logs
+- name: Display RabbitMQ logs
   debug:
     var: rabbitmq_logs.stdout_lines
   when: rabbitmq_logs is defined
 
-# 检查 RabbitMQ 配置
-- name: Verify RabbitMQ configuration
+- name: Check RabbitMQ configuration
   command: rabbitmqctl environment
   register: rabbitmq_env
+  when: rabbitmq_service_status is failed
   ignore_errors: yes
 
 - name: Display RabbitMQ environment
