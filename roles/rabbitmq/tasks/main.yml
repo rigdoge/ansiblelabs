@@ -65,6 +65,18 @@
     update_cache: yes
     allow_downgrades: yes
     allow_change_held_packages: yes
+  register: install_result
+
+- name: Display Erlang version
+  command: dpkg -l | grep erlang
+  register: erlang_version_check
+  changed_when: false
+  when: install_result is success
+
+- name: Show installed Erlang version
+  debug:
+    var: erlang_version_check.stdout_lines
+  when: erlang_version_check is defined
 
 # 启用管理插件
 - name: Enable RabbitMQ plugins
