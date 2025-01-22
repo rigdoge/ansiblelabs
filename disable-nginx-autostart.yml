@@ -3,13 +3,6 @@
   hosts: all
   become: yes
   tasks:
-    - name: Stop and disable nginx-exporter
-      systemd:
-        name: nginx-exporter
-        state: stopped
-        enabled: no
-      ignore_errors: yes
-
     - name: Stop and disable nginx
       systemd:
         name: nginx
@@ -35,6 +28,6 @@
       systemd:
         daemon_reload: yes
 
-    - name: Stop all nginx processes
-      shell: pkill nginx
+    - name: Ensure nginx is stopped
+      shell: systemctl stop nginx
       ignore_errors: yes 
