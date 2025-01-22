@@ -3,6 +3,9 @@
 # 设置错误时退出
 set -e
 
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -65,7 +68,7 @@ pip install --upgrade pip
 
 # 安装 Ansible 和依赖（虚拟环境内，不需要 sudo）
 echo -e "${YELLOW}安装 Ansible 和依赖 (虚拟环境内)...${NC}"
-pip install -r scripts/requirements.txt
+pip install -r "${SCRIPT_DIR}/requirements.txt"
 
 # 验证安装
 echo -e "${YELLOW}验证安装...${NC}"
