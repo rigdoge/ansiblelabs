@@ -18,6 +18,7 @@ ssl_options.fail_if_no_peer_cert = true
 
 # 资源限制
 vm_memory_high_watermark.relative = {{ rabbitmq_memory_high_watermark }}
+vm_memory_high_watermark_paging_ratio = {{ rabbitmq_vm_memory_high_watermark_paging_ratio }}
 disk_free_limit.absolute = {{ rabbitmq_disk_free_limit }}
 
 # 日志配置
@@ -27,16 +28,11 @@ log.dir = {{ rabbitmq_log_dir }}
 # 集群配置
 {% if rabbitmq_cluster_enabled %}
 cluster_formation.peer_discovery_backend = rabbit_peer_discovery_classic_config
-cluster_formation.classic_config.nodes.{{ ansible_hostname }} = rabbit@{{ ansible_hostname }}
-{% for node in rabbitmq_cluster_nodes %}
-cluster_formation.classic_config.nodes.{{ node }} = rabbit@{{ node }}
-{% endfor %}
+cluster_formation.classic_config.nodes.{{ ansible_play_hosts | length }} = rabbit@{{ ansible_hostname }}
 {% endif %}
 
 # 安全配置
-loopback_users = none
-default_user = {{ rabbitmq_admin_user }}
-default_pass = {{ rabbitmq_admin_password }}
+loopback_users.guest = true
 
 # 监控配置
 {% if rabbitmq_enable_monitoring %}
@@ -46,10 +42,11 @@ collect_statistics_interval = 10000
 {% endif %}
 
 # 性能优化
-tcp_listen_options.backlog = 128
-tcp_listen_options.nodelay = true
-tcp_listen_options.exit_on_close = false
-tcp_listen_options.keepalive = true
+tcp_listen_options.backlog = {{ rabbitmq_tcp_listen_options.backlog }}
+tcp_listen_options.nodelay = {{ rabbitmq_tcp_listen_options.nodelay | lower }}
+tcp_listen_options.linger.on = {{ rabbitmq_tcp_listen_options.linger.on | lower }}
+tcp_listen_options.linger.timeout = {{ rabbitmq_tcp_listen_options.linger.timeout }}
+tcp_listen_options.keepalive = {{ rabbitmq_tcp_listen_options.keepalive | lower }}
 
 # 消息持久化
 queue_master_locator = min-masters

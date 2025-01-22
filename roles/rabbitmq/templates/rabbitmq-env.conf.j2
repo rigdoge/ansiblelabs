@@ -1,0 +1,14 @@
+# 系统限制
+RABBITMQ_ULIMIT_N={{ rabbitmq_ulimit_n }}
+RABBITMQ_ULIMIT_S={{ rabbitmq_ulimit_s }}
+
+# 日志目录
+RABBITMQ_LOG_BASE={{ rabbitmq_log_dir }}
+
+# SSL/TLS 配置
+{% if rabbitmq_enable_ssl %}
+RABBITMQ_SSL_PORT={{ rabbitmq_ssl_port }}
+RABBITMQ_SSL_CERTFILE={{ rabbitmq_ssl_cert_file }}
+RABBITMQ_SSL_KEYFILE={{ rabbitmq_ssl_key_file }}
+RABBITMQ_SSL_CACERTFILE={{ rabbitmq_ssl_ca_file }}
+{% endif %} 
