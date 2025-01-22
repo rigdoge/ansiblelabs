@@ -1,37 +1,88 @@
 ---
 - name: Uninstall Nginx
-  hosts: nginx
+  hosts: all
   become: yes
   tasks:
-    - name: Stop and disable Nginx service
-      service:
+    - name: Stop Nginx service
+      systemd:
         name: nginx
         state: stopped
         enabled: no
+      ignore_errors: yes
 
-    - name: Remove Nginx package
+    - name: Get list of installed Nginx packages
+      shell: dpkg -l | grep -i nginx | awk '{print $2}'
+      register: nginx_packages
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Display found Nginx packages
+      debug:
+        msg: "Found Nginx packages: {{ nginx_packages.stdout_lines }}"
+      when: nginx_packages.stdout_lines is defined
+
+    - name: Remove all Nginx packages
       apt:
-        name: nginx
+        name: "{{ item }}"
         state: absent
         purge: yes
-        autoremove: yes
+      with_items:
+        - nginx
+        - nginx-common
+        - nginx-core
+        - nginx-full
+        - nginx-light
+        - nginx-extras
+      ignore_errors: yes
+
+    - name: Remove packages found by grep
+      apt:
+        name: "{{ item }}"
+        state: absent
+        purge: yes
+      with_items: "{{ nginx_packages.stdout_lines | default([]) }}"
+      when: nginx_packages.stdout_lines is defined
+      ignore_errors: yes
 
     - name: Remove Nginx repository
       apt_repository:
-        repo: "deb http://nginx.org/packages/debian/ bookworm nginx"
-        state: absent
+        repo: "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/ubuntu {{ ansible_distribution_release }} nginx"
         filename: nginx
-
-    - name: Remove Nginx signing key
-      apt_key:
-        url: https://nginx.org/keys/nginx_signing.key
         state: absent
+      ignore_errors: yes
 
-    - name: Remove Nginx configuration files
+    - name: Remove Nginx files and directories
       file:
         path: "{{ item }}"
         state: absent
       with_items:
         - /etc/nginx
         - /var/log/nginx
-        - /var/www/html 
+        - /usr/share/nginx
+        - /var/lib/nginx
+        - /etc/apt/sources.list.d/nginx.list
+        - /usr/share/keyrings/nginx-archive-keyring.gpg
+        - /usr/share/keyrings/nginx-archive-keyring.asc
+      ignore_errors: yes
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      ignore_errors: yes
+
+    - name: Clean apt
+      command: "{{ item }}"
+      with_items:
+        - apt-get clean
+        - apt-get autoclean
+        - apt-get autoremove --purge
+      ignore_errors: yes
+
+    - name: Check if Nginx is still installed
+      shell: dpkg -l | grep -i nginx || echo "Nginx not found"
+      register: nginx_check
+      changed_when: false
+
+    - name: Display final status
+      debug:
+        msg: "Final check result: {{ nginx_check.stdout_lines }}" 
