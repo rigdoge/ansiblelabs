@@ -1,9 +1,7 @@
 ---
-- name: Uninstall RabbitMQ and clean up
-  hosts: all
+- hosts: all
   become: yes
   tasks:
-    # 停止服务
     - name: Stop RabbitMQ services
       systemd:
         name: "{{ item }}"
@@ -14,41 +12,30 @@
         - rabbitmq-exporter
       ignore_errors: yes
 
-    # 删除仓库配置文件
-    - name: Remove RabbitMQ repository files
-      file:
-        path: "{{ item }}"
-        state: absent
-      with_items:
-        - /etc/apt/sources.list.d/rabbitmq.list
-        - /etc/apt/sources.list.d/rabbitmq-erlang.list
-        - /usr/share/keyrings/rabbitmq.E495BB49CC4BBE5B.gpg
-        - /usr/share/keyrings/rabbitmq.9F4587F226208342.gpg
-        - /usr/share/keyrings/com.rabbitmq.team.gpg
-        - /etc/apt/keyrings/rabbitmq.asc
-        - /etc/apt/keyrings/rabbitmq.gpg
-        - /etc/apt/keyrings/rabbitmq-erlang.asc
-        - /etc/apt/keyrings/rabbitmq-erlang.gpg
-
-    # 更新包缓存
-    - name: Update package cache
+    - name: Remove RabbitMQ and Erlang packages
       apt:
-        update_cache: yes
-      ignore_errors: yes
-
-    # 卸载 RabbitMQ 相关包
-    - name: Remove RabbitMQ packages
-      apt:
-        name:
-          - rabbitmq-server
-          - erlang*
+        name: "{{ item }}"
         state: absent
         purge: yes
         autoremove: yes
-      ignore_errors: yes
+      with_items:
+        - erlang*
+        - erlang-base
+        - erlang-crypto
+        - erlang-eldap
+        - erlang-inets
+        - erlang-mnesia
+        - erlang-os-mon
+        - erlang-parsetools
+        - erlang-public-key
+        - erlang-runtime-tools
+        - erlang-ssl
+        - erlang-syntax-tools
+        - erlang-tools
+        - erlang-xmerl
+        - rabbitmq-server
 
-    # 删除配置文件和数据目录
-    - name: Remove RabbitMQ directories and files
+    - name: Remove RabbitMQ configuration
       file:
         path: "{{ item }}"
         state: absent
@@ -56,18 +43,20 @@
         - /etc/rabbitmq
         - /var/lib/rabbitmq
         - /var/log/rabbitmq
-        - /usr/lib/rabbitmq
-        - /usr/share/rabbitmq
-        - /var/run/rabbitmq
-        - /etc/systemd/system/rabbitmq-exporter.service
 
-    # 删除 RabbitMQ 用户和组
-    - name: Remove RabbitMQ user and group
-      user:
-        name: rabbitmq
+    - name: Remove RabbitMQ repositories
+      file:
+        path: "{{ item }}"
         state: absent
-        remove: yes
-      ignore_errors: yes
+      with_items:
+        - /etc/apt/sources.list.d/rabbitmq.list
+        - /etc/apt/sources.list.d/rabbitmq-erlang.list
+        - /usr/share/keyrings/rabbitmq.gpg
+        - /usr/share/keyrings/rabbitmq-erlang.gpg
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
 
     # 清理 systemd
     - name: Clean systemd
