@@ -38,20 +38,10 @@
     name: "{{ item }}"
     state: absent
     purge: yes
+    autoremove: yes
   with_items:
-    - erlang-base
-    - erlang-crypto
-    - erlang-eldap
-    - erlang-inets
-    - erlang-mnesia
-    - erlang-os-mon
-    - erlang-parsetools
-    - erlang-public-key
-    - erlang-runtime-tools
-    - erlang-ssl
-    - erlang-syntax-tools
-    - erlang-tools
-    - erlang-xmerl
+    - erlang*
+    - esl-erlang
 
 # 更新包缓存
 - name: Update apt cache
@@ -63,20 +53,20 @@
 - name: Install Erlang packages
   apt:
     name:
-      - erlang-base
-      - erlang-crypto
-      - erlang-eldap
-      - erlang-inets
-      - erlang-mnesia
-      - erlang-os-mon
-      - erlang-parsetools
-      - erlang-public-key
-      - erlang-runtime-tools
-      - erlang-ssl
-      - erlang-syntax-tools
-      - erlang-tools
-      - erlang-xmerl
-    state: latest
+      - erlang-base=1:26.0*
+      - erlang-crypto=1:26.0*
+      - erlang-eldap=1:26.0*
+      - erlang-inets=1:26.0*
+      - erlang-mnesia=1:26.0*
+      - erlang-os-mon=1:26.0*
+      - erlang-parsetools=1:26.0*
+      - erlang-public-key=1:26.0*
+      - erlang-runtime-tools=1:26.0*
+      - erlang-ssl=1:26.0*
+      - erlang-syntax-tools=1:26.0*
+      - erlang-tools=1:26.0*
+      - erlang-xmerl=1:26.0*
+    state: present
     update_cache: yes
     force: yes
 
