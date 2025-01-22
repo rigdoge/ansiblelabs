@@ -16,9 +16,9 @@ RABBITMQ_ADVANCED_CONFIG_FILE=/etc/rabbitmq/advanced.config
 RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS="+P 262144 +t 5000000 +stbt db +zdbbl 32768"
 
 # SSL/TLS 配置
-{% if rabbitmq_enable_ssl %}
-RABBITMQ_SSL_PORT={{ rabbitmq_ssl_port }}
-RABBITMQ_SSL_CERTFILE={{ rabbitmq_ssl_cert_file }}
-RABBITMQ_SSL_KEYFILE={{ rabbitmq_ssl_key_file }}
-RABBITMQ_SSL_CACERTFILE={{ rabbitmq_ssl_ca_file }}
+{% if rabbitmq_enable_ssl | default(false) | bool %}
+RABBITMQ_SSL_PORT={{ rabbitmq_ssl_port | default(5671) }}
+RABBITMQ_SSL_CERTFILE={{ rabbitmq_ssl_cert_file | default("/etc/rabbitmq/ssl/cert.pem") }}
+RABBITMQ_SSL_KEYFILE={{ rabbitmq_ssl_key_file | default("/etc/rabbitmq/ssl/key.pem") }}
+RABBITMQ_SSL_CACERTFILE={{ rabbitmq_ssl_ca_file | default("/etc/rabbitmq/ssl/ca.pem") }}
 {% endif %} 
