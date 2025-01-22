@@ -1,6 +1,7 @@
 ---
 # RabbitMQ 版本
 rabbitmq_version: "3.13.7"
+erlang_version: "1:26.0.*"
 
 # RabbitMQ 管理员账户
 rabbitmq_admin_user: admin

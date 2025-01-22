@@ -59,8 +59,8 @@
 - name: Install Erlang and RabbitMQ
   apt:
     name:
-      - erlang
-      - rabbitmq-server={{ rabbitmq_version }}-1
+      - "erlang={{ erlang_version }}"
+      - "rabbitmq-server={{ rabbitmq_version }}-1"
     state: present
     update_cache: yes
     allow_downgrades: yes
