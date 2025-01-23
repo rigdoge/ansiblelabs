@@ -114,10 +114,10 @@ ansible-playbook uninstall-monitoring.yml -K
 
 1. 检查服务状态：
    ```bash
-   systemctl status prometheus
-   systemctl status alertmanager
-   systemctl status nginx-exporter
-   systemctl status grafana-server
+   sudo systemctl status prometheus
+   sudo systemctl status alertmanager
+   sudo systemctl status nginx-exporter
+   sudo systemctl status grafana-server
    ```
 
 2. 查看日志：

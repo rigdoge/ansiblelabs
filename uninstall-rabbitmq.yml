@@ -1,58 +1,63 @@
 ---
-- hosts: all
+- name: Uninstall RabbitMQ
+  hosts: all
   become: yes
   tasks:
-    - name: Stop RabbitMQ services
-      systemd:
-        name: "{{ item }}"
-        state: stopped
-        enabled: no
+    - name: Check services
+      command: systemctl status {{ item }}
+      register: service_check
+      failed_when: false
+      changed_when: false
       with_items:
         - rabbitmq-server
         - rabbitmq-exporter
+
+    - name: Stop services if they exist
+      systemd:
+        name: "{{ item.item }}"
+        state: stopped
+      when: item.rc == 0
+      with_items: "{{ service_check.results }}"
       ignore_errors: yes
 
-    - name: Remove RabbitMQ and Erlang packages
+    - name: Remove packages
       apt:
         name: "{{ item }}"
         state: absent
         purge: yes
-        autoremove: yes
       with_items:
-        - erlang*
-        - erlang-base
-        - erlang-crypto
-        - erlang-eldap
-        - erlang-inets
-        - erlang-mnesia
-        - erlang-os-mon
-        - erlang-parsetools
-        - erlang-public-key
-        - erlang-runtime-tools
-        - erlang-ssl
-        - erlang-syntax-tools
-        - erlang-tools
-        - erlang-xmerl
         - rabbitmq-server
+        - erlang
+      ignore_errors: yes
 
-    - name: Remove RabbitMQ configuration
+    - name: Clean directories
       file:
         path: "{{ item }}"
         state: absent
       with_items:
-        - /etc/rabbitmq
         - /var/lib/rabbitmq
+        - /etc/rabbitmq
         - /var/log/rabbitmq
+      ignore_errors: yes
 
-    - name: Remove RabbitMQ repositories and keys
-      file:
-        path: "{{ item }}"
+    - name: Remove RabbitMQ user
+      user:
+        name: rabbitmq
         state: absent
-      with_items:
-        - /etc/apt/sources.list.d/rabbitmq.list
-        - /etc/apt/sources.list.d/rabbitmq-erlang.list
-        - /usr/share/keyrings/rabbitmq-archive-keyring.gpg
-        - /usr/share/keyrings/rabbitmq-erlang-archive-keyring.gpg
+        remove: yes
+      ignore_errors: yes
+
+    - name: Remove RabbitMQ group
+      group:
+        name: rabbitmq
+        state: absent
+      ignore_errors: yes
+
+    - name: Remove RabbitMQ repository
+      apt_repository:
+        repo: "deb http://ppa.launchpad.net/rabbitmq/rabbitmq-erlang/ubuntu {{ ansible_distribution_release }} main"
+        state: absent
+      ignore_errors: yes
 
     - name: Update apt cache
       apt:

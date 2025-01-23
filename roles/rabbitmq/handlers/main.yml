@@ -4,6 +4,19 @@
     name: rabbitmq-server
     state: restarted
     daemon_reload: yes
+  register: restart_result
+  ignore_errors: yes
+
+- name: check restart status
+  shell: |
+    echo "=== Service Status ==="
+    systemctl status rabbitmq-server.service || true
+    echo "=== Journalctl Logs ==="
+    journalctl -u rabbitmq-server.service -n 50 --no-pager || true
+    echo "=== RabbitMQ Logs ==="
+    cat /var/log/rabbitmq/rabbit@$(hostname -s).log || true
+  when: restart_result is failed
+  ignore_errors: yes
 
 - name: restart rabbitmq-exporter
   systemd:
